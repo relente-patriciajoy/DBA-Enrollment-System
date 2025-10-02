@@ -1,3 +1,4 @@
+<!-- http://localhost/DBA-Enrollment-System/dbenrollment_app/modules/students/index.php -->
 <!-- Dashboard -->
  <?php
 include_once '../../config/database.php';
