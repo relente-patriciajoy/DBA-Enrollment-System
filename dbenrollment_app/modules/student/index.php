@@ -40,7 +40,9 @@ include_once '../../config/database.php';
 
     <!-- Action Buttons -->
     <button onclick="window.location.href='add.php'">Add Student</button>
-    <button onclick="window.print()">Print</button>
+    <!-- <button onclick="window.print()">Print</button> -->
+    <button onclick="window.location.href='export_excel.php'">Export to Excel</button>
+    <button onclick="window.location.href='export_pdf.php'">Export to PDF</button>
     <br><br>
 
     <!-- Student Table -->
