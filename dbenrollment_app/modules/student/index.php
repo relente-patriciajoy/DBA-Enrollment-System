@@ -1,51 +1,29 @@
-<!-- List, Search and Print -->
-
-<!-- http://localhost/DBA-Enrollment-System/dbenrollment_app/modules/students/index.php -->
-<!-- Dashboard -->
- <?php
-include_once '../../config/database.php';
-?>
-
+<?php include_once '../../config/database.php'; ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student Maintenance</title>
-    <style>
-        .main-content {
-            margin-left: 220px;
-            padding: 20px;
-        }
-        table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 8px;
-        }
-    </style>
+    <title>Student Management</title>
+    <link rel="stylesheet" href="../../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../../assets/css/content.css">
 </head>
 <body>
 
 <?php include_once '../../templates/sidebar.php'; ?>
 
-<div class="main-content">
-    <h2>Student Management</h2>
+<div class="main">
+    <h1>Student Management</h1>
 
-    <!-- Search Form -->
-    <form method="GET" action="">
-        <input type="text" name="search" placeholder="Search student..." />
-        <button type="submit">Search</button>
-    </form>
-    <br>
+    <div class="search-bar">
+        <form method="GET">
+            <input type="text" name="search" placeholder="Search student...">
+            <button type="submit">Search</button>
+        </form>
+    </div>
 
-    <!-- Action Buttons -->
     <button onclick="window.location.href='add.php'">Add Student</button>
-    <!-- <button onclick="window.print()">Print</button> -->
     <button onclick="window.location.href='export_excel.php'">Export to Excel</button>
     <button onclick="window.location.href='export_pdf.php'">Export to PDF</button>
-    <br><br>
 
-    <!-- Student Table -->
     <table>
         <thead>
             <tr>
@@ -61,38 +39,7 @@ include_once '../../config/database.php';
             </tr>
         </thead>
         <tbody>
-            <?php
-            $search = isset($_GET['search']) ? $_GET['search'] : '';
-
-            $sql = "SELECT * FROM tblstudent
-                    WHERE student_no LIKE '%$search%'
-                    OR last_name LIKE '%$search%'
-                    OR first_name LIKE '%$search%'
-                    ORDER BY student_id ASC";
-
-            $result = $conn->query($sql);
-
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>
-                        <td>{$row['student_no']}</td>
-                        <td>{$row['last_name']}</td>
-                        <td>{$row['first_name']}</td>
-                        <td>{$row['email']}</td>
-                        <td>{$row['gender']}</td>
-                        <td>{$row['birthdate']}</td>
-                        <td>{$row['year_level']}</td>
-                        <td>{$row['program_id']}</td>
-                        <td>
-                            <a href='edit.php?id={$row['student_id']}'>Edit</a> |
-                            <a href='delete.php?id={$row['student_id']}' onclick=\"return confirm('Are you sure?')\">Delete</a>
-                        </td>
-                    </tr>";
-                }
-            } else {
-                echo "<tr><td colspan='9'>No records found.</td></tr>";
-            }
-            ?>
+            <?php include 'tblstudent.php'; ?>
         </tbody>
     </table>
 </div>
