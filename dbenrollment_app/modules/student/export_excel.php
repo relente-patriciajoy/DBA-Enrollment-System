@@ -19,7 +19,7 @@ $result = $conn->query($sql);
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         // ensure birthdate format consistent (NULL -> empty)
-        $birth = $row['birthdate'] ? $row['birthdate'] : '';
+        $birth = $row['birthdate'] ? date('Y-m-d', strtotime($row['birthdate'])) : '';
         fputcsv($out, [
             $row['student_no'],
             $row['last_name'],
