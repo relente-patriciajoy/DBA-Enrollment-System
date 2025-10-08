@@ -1,7 +1,7 @@
 <?php
 include_once '../../config/database.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') { // Handle form submission
     $room_code = $_POST['room_code'];
     $building = $_POST['building'];
     $capacity = (int)$_POST['capacity'];

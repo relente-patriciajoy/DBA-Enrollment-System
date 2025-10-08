@@ -18,7 +18,7 @@ $pdf->Cell(30,8,'Capacity',1,1,'C',true);
 
 $pdf->SetFont('Arial','',10);
 
-$res = $conn->query("SELECT * FROM tblroom ORDER BY room_id ASC");
+$res = $conn->query("SELECT * FROM tblroom ORDER BY room_id ASC"); // Fetch data from the database
 while ($row = $res->fetch_assoc()) {
     $pdf->Cell(20,7,$row['room_id'],1,0,'C');
     $pdf->Cell(40,7,$row['room_code'],1);
