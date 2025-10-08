@@ -89,3 +89,13 @@ th {
     padding: 8px;
     border: 1px solid #ddd;
 }
+
+/* Highlight animation for newly added rows */
+.new-row {
+    background-color: #fff3cd;
+    transition: background-color 2s ease;
+}
+
+.new-row.fade-out {
+    background-color: white;
+}

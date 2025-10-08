@@ -2,10 +2,12 @@
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
 $sql = "SELECT * FROM tblstudent
-        WHERE student_no LIKE '%$search%'
+        WHERE (student_no LIKE '%$search%'
         OR last_name LIKE '%$search%'
-        OR first_name LIKE '%$search%'
-        ORDER BY student_id ASC";
+        OR first_name LIKE '%$search%')
+        AND is_deleted = 0
+        ORDER BY last_name ASC, first_name ASC
+        LIMIT 100";
 
 $result = $conn->query($sql);
 
@@ -21,12 +23,12 @@ if ($result->num_rows > 0) {
             <td>{$row['year_level']}</td>
             <td>{$row['program_id']}</td>
             <td>
-                <a href='edit.php?id={$row['student_id']}'>Edit</a> |
-                <a href='delete.php?id={$row['student_id']}' onclick=\"return confirm('Are you sure?')\">Delete</a>
+                <a href='#' class='edit-btn' data-id='{$row['student_id']}'>Edit</a> |
+                <a href='#' class='delete-btn' data-id='{$row['student_id']}'>Delete</a>
             </td>
         </tr>";
     }
 } else {
-    echo "<tr><td colspan='9'>No records found.</td></tr>";
+    echo "<tr><td colspan='9' style='text-align:center;'>No records found.</td></tr>";
 }
 ?>
