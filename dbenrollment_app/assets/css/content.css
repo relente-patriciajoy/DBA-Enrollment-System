@@ -93,7 +93,7 @@ th {
 /* Highlight animation for newly added rows */
 .new-row {
     background-color: #fff3cd;
-    transition: background-color 2s ease;
+    transition: background-color 6s ease;
 }
 
 .new-row.fade-out {

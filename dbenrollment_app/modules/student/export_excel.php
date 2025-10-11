@@ -1,37 +1,56 @@
 <?php
-// export_excel.php  (CSV) - no external library required
+require_once __DIR__ . '/../../config/database.php';
+
+// File name with real-time date (Format A: October-11-Y)
+$dateGenerated = date("F-d-Y");
+$filename = "students_" . $dateGenerated . ".csv"; // students_October-11-2025.csv
+
+// Set headers for CSV download
 header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename=students.csv');
+header('Content-Disposition: attachment; filename=' . $filename);
 
-require __DIR__ . '/../../config/database.php';
+// Open output stream
+$output = fopen('php://output', 'w');
 
-// open output stream
-$out = fopen('php://output', 'w');
+// ✅ Header Section (Template-like)
+fputcsv($output, ['Polytechnic University of the Philippines']);
+fputcsv($output, ['Generated on: ' . date("F d, Y")]); // no time
+fputcsv($output, []); // Empty row
 
-// header row
-fputcsv($out, ['Student No','Last Name','First Name','Email','Gender','Birthdate','Year Level','Program ID']);
+// Column headers
+fputcsv($output, [
+    'Student No',
+    'Last Name',
+    'First Name',
+    'Email',
+    'Gender',
+    'Birthdate',
+    'Year Level',
+    'Program ID'
+]);
 
-// fetch rows
-$sql = "SELECT student_no, last_name, first_name, email, gender, birthdate, year_level, program_id
-        FROM tblstudent ORDER BY student_id ASC";
+// Fetch student records
+$sql = "SELECT * FROM tblstudent WHERE is_deleted = 0 ORDER BY last_name ASC";
 $result = $conn->query($sql);
 
-if ($result) {
+if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        // ensure birthdate format consistent (NULL -> empty)
-        $birth = $row['birthdate'] ? date('Y-m-d', strtotime($row['birthdate'])) : '';
-        fputcsv($out, [
+        fputcsv($output, [
             $row['student_no'],
             $row['last_name'],
             $row['first_name'],
             $row['email'],
             $row['gender'],
-            $birth,
+            $row['birthdate'],
             $row['year_level'],
             $row['program_id']
         ]);
     }
+} else {
+    fputcsv($output, ['No records found']);
 }
 
-fclose($out);
+// Close output
+fclose($output);
 exit;
+?>

@@ -103,9 +103,9 @@ $(document).ready(function () {
           alert("✅ Student updated successfully!");
           $('#editModal').modal('hide');
 
-          // Update the specific row without reload
-          let row = $(`a.edit-btn[data-id='${response.student_id}']`).closest('tr');
-          row.html(`
+          // ✅ Replace entire row instead of using .html()
+          let updatedRow = `
+          <tr class="new-row">
             <td>${response.student_no}</td>
             <td>${response.last_name}</td>
             <td>${response.first_name}</td>
@@ -118,7 +118,16 @@ $(document).ready(function () {
               <a href="#" class="edit-btn" data-id="${response.student_id}">Edit</a> |
               <a href="#" class="delete-btn" data-id="${response.student_id}">Delete</a>
             </td>
-          `);
+          </tr>
+        `;
+
+          // ✅ Replace the old row with the new one
+          $(`a.edit-btn[data-id='${response.student_id}']`).closest('tr').replaceWith(updatedRow);
+
+          // ✅ Apply highlight effect properly
+          let newTableRow = $('table tbody tr.new-row').first();
+          setTimeout(() => newTableRow.addClass('fade-out'), 500);
+          setTimeout(() => newTableRow.removeClass('new-row fade-out'), 2500);
         }
       },
       error: function (xhr, status, error) {
@@ -126,6 +135,7 @@ $(document).ready(function () {
       }
     });
   });
+
 
   // 🔴 DELETE STUDENT (SOFT DELETE)
   $(document).on('click', '.delete-btn', function (e) {

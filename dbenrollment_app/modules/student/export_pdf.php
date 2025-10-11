@@ -1,62 +1,69 @@
 <?php
-// export_pdf.php using FPDF
+require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../libraries/fpdf/fpdf.php';
-require __DIR__ . '/../../config/database.php';
 
-$pdf = new FPDF('L','mm','A4'); // landscape
-$pdf->SetAutoPageBreak(true, 10);
+// Generate current date
+$dateGenerated = date("F d, Y"); // e.g., October 11, 2025
+
+// File name with date
+$filename = "students_" . date("F-d-Y") . ".pdf"; // e.g., students_October-11-2025.pdf
+
+$pdf = new FPDF('L', 'mm', 'A4'); // Landscape
 $pdf->AddPage();
-$pdf->SetFont('Arial','B',14);
-$pdf->Cell(0,8,'Student List',0,1,'C');
-$pdf->Ln(4);
 
-// table header
-$pdf->SetFont('Arial','B',10);
-$pdf->SetFillColor(220,220,220);
-
-// Column widths (adjust as needed)
-$w = [
-    'student_no' => 40,
-    'last_name'  => 35,
-    'first_name' => 35,
-    'email'      => 80,
-    'gender'     => 18,
-    'birthdate'  => 25,
-    'year_level' => 25,
-    'program_id' => 20
-];
-
-// header
-$pdf->Cell($w['student_no'],7,'Student No',1,0,'C',1);
-$pdf->Cell($w['last_name'],7,'Last Name',1,0,'C',1);
-$pdf->Cell($w['first_name'],7,'First Name',1,0,'C',1);
-$pdf->Cell($w['email'],7,'Email',1,0,'C',1);
-$pdf->Cell($w['gender'],7,'Gender',1,0,'C',1);
-$pdf->Cell($w['birthdate'],7,'Birthdate',1,0,'C',1);
-$pdf->Cell($w['year_level'],7,'Year Level',1,0,'C',1);
-$pdf->Cell($w['program_id'],7,'Program ID',1,0,'C',1);
-$pdf->Ln();
-
-// rows
-$pdf->SetFont('Arial','',9);
-$sql = "SELECT student_no, last_name, first_name, email, gender, birthdate, year_level, program_id
-        FROM tblstudent ORDER BY student_id ASC";
-$res = $conn->query($sql);
-
-while ($row = $res->fetch_assoc()) {
-    $pdf->Cell($w['student_no'],6, $row['student_no'],1);
-    $pdf->Cell($w['last_name'],6, $row['last_name'],1);
-    $pdf->Cell($w['first_name'],6, $row['first_name'],1);
-    // MultiCell for long email: workaround by truncating to fit width
-    $email = $row['email'];
-    if (strlen($email) > 40) $email = substr($email,0,40).'...';
-    $pdf->Cell($w['email'],6, $email,1);
-    $pdf->Cell($w['gender'],6, $row['gender'],1,0,'C');
-    $pdf->Cell($w['birthdate'],6, $row['birthdate'] ? $row['birthdate'] : '',1,0,'C');
-    $pdf->Cell($w['year_level'],6, $row['year_level'],1,0,'C');
-    $pdf->Cell($w['program_id'],6, $row['program_id'],1,0,'C');
-    $pdf->Ln();
+// Small centered logo
+$logoPath = __DIR__ . '/../../assets/images/pup_logo.png';
+if (file_exists($logoPath)) {
+    $pdf->Image($logoPath, 135, 10, 25); // standard centered small logo size
 }
 
-$pdf->Output('I', 'students.pdf');
+// Spacing under logo
+$pdf->Ln(25);
+
+// University Name header
+$pdf->SetFont('Arial', 'B', 14);
+$pdf->Cell(0, 8, 'Polytechnic University of the Philippines', 0, 1, 'C');
+
+// Date below header
+$pdf->SetFont('Arial', '', 11);
+$pdf->Cell(0, 6, 'Generated on: ' . $dateGenerated, 0, 1, 'C');
+$pdf->Ln(5);
+
+// Table Header
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->SetFillColor(200, 200, 200);
+
+// Updated column widths
+$w = [35, 30, 38, 80, 20, 30, 25, 20];
+$headers = ['Student No', 'Last Name', 'First Name', 'Email', 'Gender', 'Birthdate', 'Year Level', 'Prog ID'];
+
+foreach ($headers as $i => $col) {
+    $pdf->Cell($w[$i], 8, $col, 1, 0, 'C', true);
+}
+$pdf->Ln();
+
+// Table Data
+$pdf->SetFont('Arial', '', 10);
+$sql = "SELECT * FROM tblstudent WHERE is_deleted = 0 ORDER BY last_name ASC";
+$res = $conn->query($sql);
+
+if ($res->num_rows > 0) {
+    while ($row = $res->fetch_assoc()) {
+        $pdf->Cell($w[0], 7, $row['student_no'], 1);
+        $pdf->Cell($w[1], 7, $row['last_name'], 1);
+        $pdf->Cell($w[2], 7, $row['first_name'], 1);
+        $pdf->Cell($w[3], 7, $row['email'], 1);
+        $pdf->Cell($w[4], 7, $row['gender'], 1);
+        $pdf->Cell($w[5], 7, $row['birthdate'], 1);
+        $pdf->Cell($w[6], 7, $row['year_level'], 1);
+        $pdf->Cell($w[7], 7, $row['program_id'], 1);
+        $pdf->Ln();
+    }
+} else {
+    $pdf->Cell(0, 7, 'No data available', 1, 1, 'C');
+}
+
+// Output with dynamic filename
+$pdf->Output('D', $filename);
 exit;
+?>
