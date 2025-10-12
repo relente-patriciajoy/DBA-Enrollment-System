@@ -26,12 +26,22 @@ try {
     );
 
     if ($stmt->execute()) {
-        $_SESSION['new_instructor_id'] = $conn->insert_id;
-        echo json_encode([
-            "success" => true,
-            "message" => "Instructor added successfully",
-            "instructor_id" => $conn->insert_id
-        ]);
+    $newId = $conn->insert_id;
+
+    $result = $conn->query("SELECT * FROM tblinstructor WHERE instructor_id = $newId");
+
+    $data = $result->fetch_assoc();
+
+    echo json_encode([
+        "success" => true,
+        "message" => "Instructor added successfully",
+        "instructor_id" => $data['instructor_id'],
+        "last_name" => $data['last_name'],
+        "first_name" => $data['first_name'],
+        "email" => $data['email'],
+        "dept_id" => $data['dept_id']
+    ]);
+
     } else {
         throw new Exception("Execute failed: " . $stmt->error);
     }

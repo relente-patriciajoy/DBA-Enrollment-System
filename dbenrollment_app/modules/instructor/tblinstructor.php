@@ -7,13 +7,16 @@ if ($search !== '') {
     $where .= " AND (last_name LIKE '%$search%' OR first_name LIKE '%$search%' OR email LIKE '%$search%')";
 }
 
-$sql = "SELECT * FROM tblinstructor WHERE {$where} ORDER BY instructor_id DESC";
+$sql = "
+    SELECT * FROM tblinstructor
+    WHERE {$where}
+    ORDER BY last_name ASC, first_name ASC
+";
 $result = $conn->query($sql);
 
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        $highlightClass = isset($_SESSION['new_instructor_id']) && $_SESSION['new_instructor_id'] == $row['instructor_id'] ? 'new-row' : '';
-        echo "<tr class='{$highlightClass}'>
+        echo "<tr>
             <td>{$row['last_name']}</td>
             <td>{$row['first_name']}</td>
             <td>{$row['email']}</td>
@@ -24,7 +27,6 @@ if ($result && $result->num_rows > 0) {
             </td>
         </tr>";
     }
-    unset($_SESSION['new_instructor_id']);
 } else {
     echo "<tr><td colspan='5' class='text-center'>No records found.</td></tr>";
 }
