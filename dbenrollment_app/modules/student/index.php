@@ -8,8 +8,8 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <link rel="stylesheet" href="../../assets/css/sidebar.css">
-  <link rel="stylesheet" href="../../assets/css/content.css">
+  <link rel="stylesheet" href="../../../dbenrollment_app/assets/css/sidebar.css">
+  <link rel="stylesheet" href="../../../dbenrollment_app/assets/css/content.css">
 </head>
 <body>
     <?php include_once '../../templates/sidebar.php'; ?>
@@ -195,103 +195,7 @@
         </div>
     </div>
 
-    <script src="../../assets/js/student.js"></script>
-    <script>
-    $(document).ready(function() {
-        $('#studentAddForm').on('submit', function(e) {
-            e.preventDefault();
-            $.ajax({
-                url: 'add_ajax.php',
-                type: 'POST',
-                data: $(this).serialize(),
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        $('#studentAddModal').modal('hide');
-                        $('#studentAddForm')[0].reset();
-                        alert('Student added successfully!');
-                        location.reload();
-                    } else {
-                        alert(response.error || 'Failed to add student');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', error);
-                    console.log(xhr.responseText); // Add this for debugging
-                    alert('Error adding student. Please try again.');
-                }
-            });
-        });
-
-        // Edit Student AJAX
-        $('#studentEditForm').on('submit', function(e) {
-            e.preventDefault();
-            $.ajax({
-                url: 'update_ajax.php',
-                type: 'POST',
-                data: $(this).serialize(),
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        $('#studentEditModal').modal('hide');
-                        alert('Student updated successfully!');
-                        location.reload();
-                    } else {
-                        alert(response.error || 'Failed to update student');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', error);
-                    alert('Error updating student. Please try again.');
-                }
-            });
-        });
-    });
-
-    // Edit Student function
-    function editStudent(id) {
-        $.ajax({
-            url: 'get_student.php',
-            type: 'GET',
-            data: { student_id: id }, // Change 'id' to 'student_id'
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    var student = response.data;
-                    $('#edit_student_id').val(student.student_id);
-                    $('#edit_student_no').val(student.student_no);
-                    $('#edit_last_name').val(student.last_name);
-                    $('#edit_first_name').val(student.first_name);
-                    $('#edit_email').val(student.email);
-                    $('#edit_gender').val(student.gender);
-                    $('#edit_birthdate').val(student.birthdate);
-                    $('#edit_year_level').val(student.year_level);
-                    $('#edit_program_id').val(student.program_id);
-                    $('#studentEditModal').modal('show');
-                } else {
-                    alert(response.error || 'Failed to load student data');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', error);
-                alert('Error loading student data');
-            }
-        });
-    }
-
-    // Delete Student function
-    function deleteStudent(id) {
-        if (confirm('Are you sure you want to delete this student?')) {
-            $.ajax({
-                url: 'delete_ajax.php', // <-- fix here
-                type: 'POST',
-                data: { id: id },
-                success: function(response) {
-                    location.reload();
-                }
-            });
-        }
-    }
-    </script>
+    <!-- Move inline scripts to external file -->
+    <script src="../../../dbenrollment_app/assets/js/student.js"></script>
 </body>
 </html>
