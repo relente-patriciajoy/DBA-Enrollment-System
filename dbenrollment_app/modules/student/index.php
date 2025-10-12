@@ -197,17 +197,26 @@
 
     <script src="../../assets/js/student.js"></script>
     <script>
-    // Add Student AJAX
     $(document).ready(function() {
         $('#studentAddForm').on('submit', function(e) {
             e.preventDefault();
             $.ajax({
-                url: 'add_student.php',
+                url: 'add_ajax.php',
                 type: 'POST',
                 data: $(this).serialize(),
+                dataType: 'json',
                 success: function(response) {
-                    $('#studentAddModal').modal('hide');
-                    location.reload();
+                    if (response.success) {
+                        $('#studentAddModal').modal('hide');
+                        alert('Student added successfully!');
+                        location.reload();
+                    } else {
+                        alert(response.error || 'Failed to add student');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    alert('Error adding student. Please try again.');
                 }
             });
         });
@@ -216,7 +225,7 @@
         $('#studentEditForm').on('submit', function(e) {
             e.preventDefault();
             $.ajax({
-                url: 'update_student.php',
+                url: 'update_ajax.php',
                 type: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
