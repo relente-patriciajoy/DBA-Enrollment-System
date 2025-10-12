@@ -1,3 +1,4 @@
+<!-- To enable edit -->
 <?php
 header('Content-Type: application/json');
 include_once '../../config/database.php';
