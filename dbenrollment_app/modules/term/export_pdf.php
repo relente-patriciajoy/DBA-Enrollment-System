@@ -5,26 +5,29 @@ require_once __DIR__ . '/../../config/database.php';
 $pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial','B',14);
-$pdf->Cell(0,8,'Terms Report',0,1,'C');
+$pdf->Cell(0,8,'Term Report',0,1,'C');
 $pdf->Ln(4);
+
+$w = [30, 50, 50, 50]; 
+$headers = ['Term ID', 'Term Name', 'Start Date', 'End Date'];
 
 $pdf->SetFont('Arial','B',10);
 $pdf->SetFillColor(200,200,200);
+foreach ($headers as $i => $header) {
+    $pdf->Cell($w[$i],8,$header,1,0,'C',true);
+}
+$pdf->Ln();
 
-$pdf->Cell(20,8,'ID',1,0,'C',true);
-$pdf->Cell(50,8,'Term Code',1,0,'C',true);
-$pdf->Cell(40,8,'Start Date',1,0,'C',true);
-$pdf->Cell(40,8,'End Date',1,1,'C',true);
+$sql = "SELECT * FROM tblterm WHERE is_deleted = 0 ORDER BY term_id ASC";
+$res = $conn->query($sql);
 
-$pdf->SetFont('Arial','',10);
-
-$res = $conn->query("SELECT * FROM tblterm ORDER BY term_id ASC");
 while ($row = $res->fetch_assoc()) {
-    $pdf->Cell(20,7,$row['term_id'],1,0,'C');
-    $pdf->Cell(50,7,$row['term_code'],1);
-    $pdf->Cell(40,7,$row['start_date'],1);
-    $pdf->Cell(40,7,$row['end_date'],1,1);
+    $pdf->Cell($w[0],7,$row['term_id'],1);
+    $pdf->Cell($w[1],7,$row['term_name'],1);
+    $pdf->Cell($w[2],7,$row['start_date'],1);
+    $pdf->Cell($w[3],7,$row['end_date'],1,1);
 }
 
-$pdf->Output('I','terms.pdf');
+$pdf->Output('D', 'terms_' . date('F-d-Y') . '.pdf');
 exit;
+?>

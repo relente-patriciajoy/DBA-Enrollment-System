@@ -2,13 +2,26 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../libraries/fpdf/fpdf.php';
 
+// Create PDF class with footer
+class PDF extends FPDF {
+    function Footer() {
+        // Position at 15 mm from bottom
+        $this->SetY(-15);
+        // Arial italic 8
+        $this->SetFont('Arial', 'I', 8);
+        // Page number
+        $this->Cell(0, 10, 'Page ' . $this->PageNo() . ' of {nb}', 0, 0, 'C');
+    }
+}
+
 // Generate current date
 $dateGenerated = date("F d, Y"); // e.g., October 11, 2025
 
 // File name with date
 $filename = "students_" . date("F-d-Y") . ".pdf"; // e.g., students_October-11-2025.pdf
 
-$pdf = new FPDF('L', 'mm', 'A4'); // Landscape
+$pdf = new PDF('L', 'mm', 'A4'); // Use our custom PDF class
+$pdf->AliasNbPages(); // Initialize page counter
 $pdf->AddPage();
 
 // Small centered logo
