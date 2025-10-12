@@ -1,27 +1,85 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
+include_once '../../config/database.php';
 
-$dateGenerated = date("F-d-Y");
-$filename = "programs_" . $dateGenerated . ".csv";
+$dateGenerated = date("F d, Y");
+$filename = "programs_" . date("Y-m-d") . ".xls";
 
-header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename=' . $filename);
+// Headers for Excel
+header("Content-Type: application/vnd.ms-excel");
+header("Content-Disposition: attachment; filename=$filename");
+header("Pragma: no-cache");
+header("Expires: 0");
 
-$output = fopen('php://output', 'w');
+// Start output
+echo '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
+echo '<head>';
+echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
+echo '<style>';
+echo 'table { border-collapse: collapse; width: 100%; }';
+echo 'th, td { border: 1px solid black; padding: 8px; text-align: left; }';
+echo 'th { background-color: #f2f2f2; font-weight: bold; }';
+echo '.header { text-align: center; font-weight: bold; margin-bottom: 20px; }';
+echo '.title { font-size: 18px; font-weight: bold; }';
+echo '.subtitle { font-size: 14px; }';
+echo '.date { font-size: 12px; margin-bottom: 10px; }';
+echo '</style>';
+echo '</head>';
+echo '<body>';
 
-fputcsv($output, ['Polytechnic University of the Philippines']);
-fputcsv($output, ['Generated on: ' . date("F d, Y")]);
-fputcsv($output, []);
-fputcsv($output, ['Program Code','Program Name','Department']);
+// University Header
+echo '<div class="header">';
+echo '<div class="title">Polytechnic University of the Philippines</div>';
+echo '<div class="date">Generated on: ' . $dateGenerated . '</div>';
+echo '<div class="subtitle">Program Report</div>';
+echo '</div>';
+echo '<br><br>';
 
-$sql = "SELECT p.program_code, p.program_name, d.dept_name FROM tblprogram p LEFT JOIN tbldepartment d ON p.dept_id=d.dept_id WHERE p.is_deleted=0 ORDER BY p.program_name ASC";
-$res = $conn->query($sql);
-if ($res->num_rows>0) {
-  while($r=$res->fetch_assoc()){
-    fputcsv($output, [$r['program_code'],$r['program_name'],$r['dept_name']]);
-  }
+// Table
+echo '<table>';
+echo '<thead>';
+echo '<tr>';
+echo '<th>Program Code</th>';
+echo '<th>Program Name</th>';
+echo '<th>Department</th>';
+echo '</tr>';
+echo '</thead>';
+echo '<tbody>';
+
+$sql = "SELECT p.program_code, p.program_name, d.dept_name
+        FROM tblprogram p
+        LEFT JOIN tbldepartment d ON p.dept_id = d.dept_id
+        WHERE p.is_deleted = 0
+        ORDER BY p.program_name ASC";
+$result = $conn->query($sql);
+
+$totalRecords = 0;
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo '<tr>';
+        echo '<td>' . htmlspecialchars($row['program_code']) . '</td>';
+        echo '<td>' . htmlspecialchars($row['program_name']) . '</td>';
+        echo '<td>' . htmlspecialchars($row['dept_name']) . '</td>';
+        echo '</tr>';
+        $totalRecords++;
+    }
 } else {
-  fputcsv($output, ['No records found']);
+    echo '<tr>';
+    echo '<td colspan="3" style="text-align: center;">No records found</td>';
+    echo '</tr>';
 }
-fclose($output);
+
+echo '</tbody>';
+echo '</table>';
+
+// Footer with record count
+echo '<br><br>';
+echo '<div style="text-align: center; font-size: 10px; color: gray;">';
+echo 'Total Records: ' . $totalRecords . ' | Generated on: ' . $dateGenerated;
+echo '</div>';
+
+echo '</body>';
+echo '</html>';
+
+$conn->close();
 exit;
+?>
