@@ -2,18 +2,22 @@
 session_start(); // Add session start
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 
+$where = "is_deleted = 0";
+if ($search !== '') {
+    $where .= " AND (student_no LIKE '%$search%' OR last_name LIKE '%$search%' OR first_name LIKE '%$search%')";
+}
+
 $sql = "SELECT * FROM tblstudent 
-        WHERE (student_no LIKE '%$search%' 
-        OR last_name LIKE '%$search%' 
-        OR first_name LIKE '%$search%')
-        AND is_deleted = 0 
+        WHERE $where
         ORDER BY last_name ASC, first_name ASC";
 
 $result = $conn->query($sql);
 
 if ($result && $result->num_rows > 0) {
+    $foundNew = false;
     while ($row = $result->fetch_assoc()) {
         $highlightClass = isset($_SESSION['new_student_id']) && $_SESSION['new_student_id'] == $row['student_id'] ? 'new-row' : '';
+        if ($highlightClass) $foundNew = true;
         echo "<tr class='{$highlightClass}'>
             <td>{$row['student_no']}</td>
             <td>{$row['last_name']}</td>
@@ -29,8 +33,8 @@ if ($result && $result->num_rows > 0) {
             </td>
         </tr>";
     }
-    // Only unset if it exists
-    if(isset($_SESSION['new_student_id'])) {
+    // Only unset if it exists and was found
+    if ($foundNew && isset($_SESSION['new_student_id'])) {
         unset($_SESSION['new_student_id']);
     }
 } else {

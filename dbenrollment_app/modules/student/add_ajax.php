@@ -22,6 +22,8 @@ try {
   $stmt->bind_param("ssssssss", $student_no, $last_name, $first_name, $email, $gender, $birthdate, $year_level, $program_id);
 
   if ($stmt->execute()) {
+      session_start();
+      $_SESSION['new_student_id'] = $conn->insert_id;
       echo json_encode([
           "success" => true,
           "student_id" => $conn->insert_id,

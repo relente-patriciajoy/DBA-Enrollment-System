@@ -196,5 +196,72 @@
     </div>
 
     <script src="../../assets/js/student.js"></script>
+    <script>
+    // Add Student AJAX
+    $(document).ready(function() {
+        $('#studentAddForm').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: 'add_student.php',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    $('#studentAddModal').modal('hide');
+                    location.reload();
+                }
+            });
+        });
+
+        // Edit Student AJAX
+        $('#studentEditForm').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: 'update_student.php',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    $('#studentEditModal').modal('hide');
+                    location.reload();
+                }
+            });
+        });
+    });
+
+    // Edit Student function
+    function editStudent(id) {
+        $.ajax({
+            url: 'get_student.php',
+            type: 'GET',
+            data: { id: id },
+            success: function(response) {
+                var student = JSON.parse(response);
+                $('#edit_student_id').val(student.student_id);
+                $('#edit_student_no').val(student.student_no);
+                $('#edit_last_name').val(student.last_name);
+                $('#edit_first_name').val(student.first_name);
+                $('#edit_email').val(student.email);
+                $('#edit_gender').val(student.gender);
+                $('#edit_birthdate').val(student.birthdate);
+                $('#edit_year_level').val(student.year_level);
+                $('#edit_program_id').val(student.program_id);
+                $('#studentEditModal').modal('show');
+            }
+        });
+    }
+
+    // Delete Student function
+    function deleteStudent(id) {
+        if (confirm('Are you sure you want to delete this student?')) {
+            $.ajax({
+                url: 'delete_ajax.php', // <-- fix here
+                type: 'POST',
+                data: { id: id },
+                success: function(response) {
+                    location.reload();
+                }
+            });
+        }
+    }
+    </script>
 </body>
 </html>
