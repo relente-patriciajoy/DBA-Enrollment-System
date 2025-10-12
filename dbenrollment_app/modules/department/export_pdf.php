@@ -42,8 +42,9 @@ $pdf->Ln(4);
 $pdf->SetFont('Arial','B',10);
 $pdf->SetFillColor(200,200,200);
 
-$w = [30, 120, 50]; // Adjust widths for department fields
-$headers = ['Dept ID', 'Department Name', 'Building'];
+// Updated widths for 3 columns: Dept ID, Dept Code, Department Name
+$w = [30, 50, 120];
+$headers = ['Dept ID', 'Dept Code', 'Department Name'];
 
 foreach ($headers as $i => $header) {
     $pdf->Cell($w[$i],8,$header,1,0,'C',true);
@@ -52,13 +53,14 @@ $pdf->Ln();
 
 $pdf->SetFont('Arial','',10);
 
-$sql = "SELECT * FROM tbldepartment WHERE is_deleted = 0 ORDER BY dept_id ASC";
+// Updated query to match your actual table structure
+$sql = "SELECT dept_id, dept_code, dept_name FROM tbldepartment WHERE is_deleted = 0 ORDER BY dept_name ASC";
 $res = $conn->query($sql);
 
 while ($row = $res->fetch_assoc()) {
-    $pdf->Cell($w[0],7,$row['dept_id'],1);
-    $pdf->Cell($w[1],7,$row['dept_name'],1);
-    $pdf->Cell($w[2],7,$row['building'],1,1);
+    $pdf->Cell($w[0],7,$row['dept_id'],1,0,'C');
+    $pdf->Cell($w[1],7,$row['dept_code'],1);
+    $pdf->Cell($w[2],7,$row['dept_name'],1,1);
 }
 
 $pdf->Output('D', 'departments_'.date('Y-m-d').'.pdf');
