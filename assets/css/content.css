@@ -1,0 +1,184 @@
+.main {
+    margin-left: 0 !important;
+    /* Override any other margin-left */
+    padding: 20px;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.container-fluid {
+    width: 100%;
+    max-width: 1400px;
+    /* Limit maximum width */
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.table-responsive {
+    margin-top: 20px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    margin: 0 auto;
+    /* Center the table */
+    border-collapse: collapse;
+    background: white;
+    table-layout: fixed;
+    /* This ensures equal column distribution */
+}
+
+.table th,
+.table td {
+    padding: 15px;
+    vertical-align: middle;
+    text-align: left;
+    border: 1px solid #dee2e6;
+    word-wrap: break-word;
+    /* Handles long content */
+}
+
+/* Column width specifications */
+.table th:nth-child(1),
+/* Student No */
+.table td:nth-child(1) {
+    width: 12%;
+}
+
+.table th:nth-child(2),
+/* Last Name */
+.table td:nth-child(2),
+.table th:nth-child(3),
+/* First Name */
+.table td:nth-child(3) {
+    width: 15%;
+}
+
+.table th:nth-child(4),
+/* Email */
+.table td:nth-child(4) {
+    width: 20%;
+}
+
+.table th:nth-child(5),
+/* Gender */
+.table td:nth-child(5) {
+    width: 8%;
+}
+
+.table th:nth-child(6),
+/* Birthdate */
+.table td:nth-child(6) {
+    width: 10%;
+}
+
+.table th:nth-child(7),
+/* Year Level */
+.table td:nth-child(7) {
+    width: 8%;
+}
+
+.table th:nth-child(8),
+/* Program ID */
+.table td:nth-child(8) {
+    width: 7%;
+}
+
+.table th:nth-child(9),
+/* Actions */
+.table td:nth-child(9) {
+    width: 10%;
+}
+
+.search-bar {
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    padding: 6px 12px;
+    margin-right: 10px;
+}
+
+/* Add spacing between action buttons */
+.btn {
+    margin: 0 5px;
+}
+
+/* Ensure consistent table cell width */
+.table th {
+    white-space: nowrap;
+}
+
+.action-bar {
+    padding: 0;
+    background-color: #fff;
+    border-radius: 0.25rem;
+}
+
+.search-section {
+    flex: 0 0 auto;
+    min-width: 300px;
+}
+
+.search-form {
+    width: 100%;
+}
+
+.button-group {
+    flex: 0 0 auto;
+}
+
+.content-header {
+    padding: 10px 0;
+}
+
+.page-title {
+    font-size: 24px;
+    margin: 0;
+}
+
+.content-wrapper {
+    margin-left: 250px;
+    min-height: 100vh;
+    background: #f8f9fa;
+}
+
+.content-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.content-header {
+    padding-top: 1rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.action-bar {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-section {
+    flex: 0 0 auto;
+    min-width: 350px;
+}
+
+.search-form {
+    width: 100%;
+}
+
+.button-group {
+    flex: 0 0 auto;
+}

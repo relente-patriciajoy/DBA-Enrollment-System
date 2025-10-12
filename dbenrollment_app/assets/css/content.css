@@ -1,8 +1,7 @@
 /* Main content */
 .main {
-    margin-left: 220px;
-    /* leave space for sidebar */
-    padding: 20px;
+    margin-left: 200px;
+    padding: 30px;
     background: #f8f9fa;
     min-height: 100vh;
 }
@@ -28,29 +27,9 @@ button:hover {
     background: #0056b3;
 }
 
-/* Table */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-th,
-td {
-    border: 1px solid #dee2e6;
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background: #007bff;
-    color: #fff;
-}
-
-tr:nth-child(even) {
-    background: #f2f2f2;
+.btn {
+    border-radius: 6px;
+    margin-right: 8px;
 }
 
 /* Search bar */
@@ -65,29 +44,49 @@ tr:nth-child(even) {
     border-radius: 4px;
 }
 
-.btn {
-    border-radius: 6px;
+/* Table container */
+.table-container {
+    width: 90%;
+    margin: 0 auto;
+    overflow-x: auto;
 }
 
-.modal-content {
-    border-radius: 12px;
-}
-
+/* Table */
 table {
-    width: 100%;
+    width: 95%;
+    margin: 0 auto;
     border-collapse: collapse;
+    margin-top: 15px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
 }
 
 table th {
     background: #343a40;
     color: white;
+    font-weight: bold;
     text-align: center;
+    padding: 12px;
+    border: 1px solid #dee2e6;
 }
 
-table td,
-th {
-    padding: 8px;
-    border: 1px solid #ddd;
+table td {
+    background: #f9f9f9;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+}
+
+/* Zebra effect */
+.table-container table tr:nth-child(even) td {
+    background: #f1f1f1;
+}
+
+/* Hover effect */
+.table-container table tr:hover td {
+    background: #dfe9ff;
+    transition: 0.2s;
 }
 
 /* Highlight animation for newly added rows */
@@ -98,4 +97,22 @@ th {
 
 .new-row.fade-out {
     background-color: white;
+}
+
+/* Sticky header */
+thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 12px;
 }
