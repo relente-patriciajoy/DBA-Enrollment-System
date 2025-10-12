@@ -1,14 +1,13 @@
-<!-- To enable edit -->
 <?php
 header('Content-Type: application/json');
 include_once '../../config/database.php';
 
 try {
-    if (empty($_GET['student_id'])) { // Changed from 'id' to 'student_id'
+    if (empty($_GET['student_id'])) {
         throw new Exception("Missing student ID");
     }
 
-    $id = intval($_GET['student_id']); // Changed from 'id' to 'student_id'
+    $id = intval($_GET['student_id']);
     $stmt = $conn->prepare("SELECT * FROM tblstudent WHERE student_id = ? AND is_deleted = 0");
     $stmt->bind_param("i", $id);
     
