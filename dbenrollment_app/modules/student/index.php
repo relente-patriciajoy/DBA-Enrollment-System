@@ -253,7 +253,7 @@
         $.ajax({
             url: 'get_student.php',
             type: 'GET',
-            data: { student_id: id }, // Changed to match your database column name
+            data: { student_id: id }, // Change 'id' to 'student_id'
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
@@ -274,7 +274,7 @@
             },
             error: function(xhr, status, error) {
                 console.error('AJAX Error:', error);
-                alert('Error loading student data. Please try again.');
+                alert('Error loading student data');
             }
         });
     }
