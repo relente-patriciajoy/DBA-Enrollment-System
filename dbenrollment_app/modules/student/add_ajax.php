@@ -1,3 +1,4 @@
+<!-- Add Student AJAX MODAL -->
 <?php
 // Start session at the top
 session_start();

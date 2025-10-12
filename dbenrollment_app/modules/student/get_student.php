@@ -1,28 +1,35 @@
+<!-- Edit Modal -->
 <?php
 header('Content-Type: application/json');
 include_once '../../config/database.php';
 
 try {
-    if (!isset($_GET['id']) || empty($_GET['id'])) {
-        throw new Exception("Missing student ID.");
+    if (empty($_GET['student_id'])) {
+        throw new Exception("Missing student ID");
     }
-
-    $id = intval($_GET['id']);
 
     $stmt = $conn->prepare("SELECT * FROM tblstudent WHERE student_id = ? AND is_deleted = 0");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->bind_param("i", $_GET['student_id']);
 
-    if ($result->num_rows === 0) {
-        throw new Exception("Student not found or has been deleted.");
+    if ($stmt->execute()) {
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            echo json_encode([
+                "success" => true,
+                "data" => $row
+            ]);
+        } else {
+            throw new Exception("Student not found");
+        }
+    } else {
+        throw new Exception("Failed to fetch student data");
     }
-
-    $student = $result->fetch_assoc();
-    echo json_encode($student);
 
     $stmt->close();
 } catch (Exception $e) {
-    echo json_encode(["error" => $e->getMessage()]);
+    echo json_encode([
+        "success" => false,
+        "error" => $e->getMessage()
+    ]);
 }
 ?>
