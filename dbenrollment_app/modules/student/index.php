@@ -208,6 +208,7 @@
                 success: function(response) {
                     if (response.success) {
                         $('#studentAddModal').modal('hide');
+                        $('#studentAddForm')[0].reset();
                         alert('Student added successfully!');
                         location.reload();
                     } else {
@@ -216,6 +217,7 @@
                 },
                 error: function(xhr, status, error) {
                     console.error('AJAX Error:', error);
+                    console.log(xhr.responseText); // Add this for debugging
                     alert('Error adding student. Please try again.');
                 }
             });

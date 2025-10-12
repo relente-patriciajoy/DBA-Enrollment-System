@@ -182,3 +182,20 @@
 .button-group {
     flex: 0 0 auto;
 }
+
+/* Highlight animation for new rows */
+.new-row {
+    animation: highlightFade 3s ease-in-out;
+}
+
+@keyframes highlightFade {
+    0% {
+        background-color: #fff3cd;
+    }
+    70% {
+        background-color: #fff3cd;
+    }
+    100% {
+        background-color: transparent;
+    }
+}

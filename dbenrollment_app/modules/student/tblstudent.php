@@ -7,9 +7,14 @@ if ($search !== '') {
     $where .= " AND (student_no LIKE '%$search%' OR last_name LIKE '%$search%' OR first_name LIKE '%$search%')";
 }
 
+// If there's a new student, show it at the top
+$orderBy = isset($_SESSION['new_student_id']) 
+    ? "CASE WHEN student_id = {$_SESSION['new_student_id']} THEN 0 ELSE 1 END, last_name ASC, first_name ASC"
+    : "last_name ASC, first_name ASC";
+
 $sql = "SELECT * FROM tblstudent 
         WHERE $where
-        ORDER BY last_name ASC, first_name ASC";
+        ORDER BY $orderBy";
 
 $result = $conn->query($sql);
 
