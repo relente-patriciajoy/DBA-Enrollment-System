@@ -7,8 +7,7 @@ $sql = "SELECT * FROM tblstudent
         OR last_name LIKE '%$search%' 
         OR first_name LIKE '%$search%')
         AND is_deleted = 0 
-        ORDER BY student_id DESC, last_name ASC 
-        LIMIT 100";
+        ORDER BY last_name ASC, first_name ASC";
 
 $result = $conn->query($sql);
 
