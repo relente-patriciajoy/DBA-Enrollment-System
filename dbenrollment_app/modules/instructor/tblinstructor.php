@@ -1,28 +1,31 @@
 <?php
-$search = isset($_GET['search']) ? $_GET['search'] : '';
+session_start();
+$search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 
-$sql = "SELECT * FROM tblinstructor
-        WHERE first_name LIKE '%$search%'
-        OR last_name LIKE '%$search%'
-        OR email LIKE '%$search%'
-        ORDER BY instructor_id ASC";
+$where = "is_deleted = 0";
+if ($search !== '') {
+    $where .= " AND (last_name LIKE '%$search%' OR first_name LIKE '%$search%' OR email LIKE '%$search%')";
+}
 
+$sql = "SELECT * FROM tblinstructor WHERE {$where} ORDER BY instructor_id DESC";
 $result = $conn->query($sql);
 
-if ($result->num_rows > 0) {
+if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        echo "<tr>
-            <td>{$row['instructor_id']}</td>
-            <td>{$row['last_name']}, {$row['first_name']}</td>
+        $highlightClass = isset($_SESSION['new_instructor_id']) && $_SESSION['new_instructor_id'] == $row['instructor_id'] ? 'new-row' : '';
+        echo "<tr class='{$highlightClass}'>
+            <td>{$row['last_name']}</td>
+            <td>{$row['first_name']}</td>
             <td>{$row['email']}</td>
             <td>{$row['dept_id']}</td>
-            <td>
-                <a href='edit.php?id={$row['instructor_id']}'>Edit</a> |
-                <a href='delete.php?id={$row['instructor_id']}' onclick=\"return confirm('Are you sure?')\">Delete</a>
+            <td class='text-center'>
+                <button class='btn btn-sm btn-warning' onclick='editInstructor({$row['instructor_id']})'>Edit</button>
+                <button class='btn btn-sm btn-danger' onclick='deleteInstructor({$row['instructor_id']})'>Delete</button>
             </td>
         </tr>";
     }
+    unset($_SESSION['new_instructor_id']);
 } else {
-    echo "<tr><td colspan='5'>No records found.</td></tr>";
+    echo "<tr><td colspan='5' class='text-center'>No records found.</td></tr>";
 }
 ?>
