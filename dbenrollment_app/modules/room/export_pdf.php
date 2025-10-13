@@ -2,17 +2,25 @@
 require_once __DIR__ . '/../../libraries/fpdf/fpdf.php';
 require_once __DIR__ . '/../../config/database.php';
 
+class PDF extends FPDF {
+    function Footer() {
+        $this->SetY(-15);
+        $this->SetFont('Arial', 'I', 8);
+        $this->Cell(0, 10, 'Page ' . $this->PageNo() . ' of {nb}', 0, 0, 'C');
+    }
+}
+
 $dateGenerated = date("F d, Y");
 $filename = "rooms_" . date("F-d-Y") . ".pdf";
 
-$pdf = new PDF('L','mm','A4');
+$pdf = new PDF('P','mm','A4');
 $pdf->AliasNbPages();
 $pdf->AddPage();
 
 // Add logo
 $logoPath = __DIR__ . '/../../assets/images/pup_logo.png';
 if (file_exists($logoPath)) {
-    $pdf->Image($logoPath, 135, 10, 25);
+    $pdf->Image($logoPath, 92, 10, 25);
 }
 
 $pdf->Ln(25);
@@ -34,24 +42,31 @@ $pdf->Ln(4);
 $pdf->SetFont('Arial','B',10);
 $pdf->SetFillColor(200,200,200);
 
-$w = [30, 50, 50, 50]; 
-$headers = ['Room ID', 'Room Name', 'Building', 'Capacity'];
+// Column widths
+$w = [25, 60, 65, 40];
+$headers = ['Room ID', 'Room Code', 'Building', 'Capacity'];
 
 foreach ($headers as $i => $header) {
     $pdf->Cell($w[$i],8,$header,1,0,'C',true);
 }
 $pdf->Ln();
 
-$sql = "SELECT * FROM tblroom WHERE is_deleted = 0 ORDER BY room_id ASC";
+$pdf->SetFont('Arial','',9);
+
+$sql = "SELECT room_id, room_code, building, capacity
+        FROM tblroom
+        WHERE is_deleted = 0
+        ORDER BY room_code ASC";
 $res = $conn->query($sql);
 
 while ($row = $res->fetch_assoc()) {
-    $pdf->Cell($w[0],7,$row['room_id'],1);
-    $pdf->Cell($w[1],7,$row['room_name'],1);
+    $pdf->Cell($w[0],7,$row['room_id'],1,0,'C');
+    $pdf->Cell($w[1],7,$row['room_code'],1);
     $pdf->Cell($w[2],7,$row['building'],1);
-    $pdf->Cell($w[3],7,$row['capacity'],1,1);
+    $pdf->Cell($w[3],7,$row['capacity'],1,0,'C');
+    $pdf->Ln();
 }
 
-$pdf->Output('D', $filename);
+$pdf->Output('D', 'rooms_'.date('Y-m-d').'.pdf');
 exit;
 ?>
