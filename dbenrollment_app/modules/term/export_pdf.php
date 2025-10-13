@@ -2,32 +2,71 @@
 require_once __DIR__ . '/../../libraries/fpdf/fpdf.php';
 require_once __DIR__ . '/../../config/database.php';
 
-$pdf = new FPDF();
+class PDF extends FPDF {
+    function Footer() {
+        $this->SetY(-15);
+        $this->SetFont('Arial', 'I', 8);
+        $this->Cell(0, 10, 'Page ' . $this->PageNo() . ' of {nb}', 0, 0, 'C');
+    }
+}
+
+$dateGenerated = date("F d, Y");
+$filename = "terms_" . date("F-d-Y") . ".pdf";
+
+$pdf = new PDF('P','mm','A4');
+$pdf->AliasNbPages();
 $pdf->AddPage();
+
+// Add logo
+$logoPath = __DIR__ . '/../../assets/images/pup_logo.png';
+if (file_exists($logoPath)) {
+    $pdf->Image($logoPath, 92, 10, 25);
+}
+
+$pdf->Ln(25);
+
+// University Name header
+$pdf->SetFont('Arial', 'B', 14);
+$pdf->Cell(0, 8, 'Polytechnic University of the Philippines', 0, 1, 'C');
+
+// Date Generated
+$pdf->SetFont('Arial', '', 11);
+$pdf->Cell(0, 6, 'Generated on: ' . $dateGenerated, 0, 1, 'C');
+$pdf->Ln(5);
+
+// Report Title
 $pdf->SetFont('Arial','B',14);
 $pdf->Cell(0,8,'Term Report',0,1,'C');
 $pdf->Ln(4);
 
-$w = [30, 50, 50, 50]; 
-$headers = ['Term ID', 'Term Name', 'Start Date', 'End Date'];
-
 $pdf->SetFont('Arial','B',10);
 $pdf->SetFillColor(200,200,200);
+
+// Column widths
+$w = [25, 65, 50, 50];
+$headers = ['Term ID', 'Term Code', 'Start Date', 'End Date'];
+
 foreach ($headers as $i => $header) {
     $pdf->Cell($w[$i],8,$header,1,0,'C',true);
 }
 $pdf->Ln();
 
-$sql = "SELECT * FROM tblterm WHERE is_deleted = 0 ORDER BY term_id ASC";
+$pdf->SetFont('Arial','',9);
+
+$sql = "SELECT term_id, term_code, start_date, end_date
+        FROM tblterm
+        WHERE is_deleted = 0
+        ORDER BY start_date ASC";
 $res = $conn->query($sql);
 
 while ($row = $res->fetch_assoc()) {
-    $pdf->Cell($w[0],7,$row['term_id'],1);
-    $pdf->Cell($w[1],7,$row['term_name'],1);
-    $pdf->Cell($w[2],7,$row['start_date'],1);
-    $pdf->Cell($w[3],7,$row['end_date'],1,1);
+    $pdf->Cell($w[0],7,$row['term_id'],1,0,'C');
+    $pdf->Cell($w[1],7,$row['term_code'],1);
+    $pdf->Cell($w[2],7,date('F d, Y', strtotime($row['start_date'])),1,0,'C');
+    $pdf->Cell($w[3],7,date('F d, Y', strtotime($row['end_date'])),1,0,'C');
+    $pdf->Ln();
 }
 
-$pdf->Output('D', 'terms_' . date('F-d-Y') . '.pdf');
+$pdf->Output('D', 'terms_'.date('Y-m-d').'.pdf');
 exit;
 ?>
