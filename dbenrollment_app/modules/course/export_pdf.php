@@ -39,26 +39,37 @@ $pdf->SetFont('Arial','B',14);
 $pdf->Cell(0,8,'Course Report',0,1,'C');
 $pdf->Ln(4);
 
-$w = [20, 30, 100, 20, 30];
-$headers = ['Course ID', 'Code', 'Description', 'Units', 'Program ID'];
+$pdf->SetFont('Arial','B',10);
+$pdf->SetFillColor(200,200,200);
+
+// Column widths
+$w = [15, 30, 80, 20, 25, 25, 25];
+$headers = ['ID', 'Course Code', 'Course Title', 'Units', 'Lecture Hrs', 'Lab Hrs', 'Dept ID'];
 
 foreach ($headers as $i => $header) {
     $pdf->Cell($w[$i],8,$header,1,0,'C',true);
 }
 $pdf->Ln();
 
-$pdf->SetFont('Arial','',10);
+$pdf->SetFont('Arial','',9);
 
-$sql = "SELECT * FROM tblcourse WHERE is_deleted = 0 ORDER BY course_id ASC";
+$sql = "SELECT course_id, course_code, course_title, units, lecture_hours, lab_hours, dept_id
+        FROM tblcourse
+        WHERE is_deleted = 0
+        ORDER BY course_title ASC";
 $res = $conn->query($sql);
 
 while ($row = $res->fetch_assoc()) {
-    $pdf->Cell($w[0],7,$row['course_id'],1);
+    $pdf->Cell($w[0],7,$row['course_id'],1,0,'C');
     $pdf->Cell($w[1],7,$row['course_code'],1);
-    $pdf->Cell($w[2],7,$row['description'],1);
-    $pdf->Cell($w[3],7,$row['units'],1);
-    $pdf->Cell($w[4],7,$row['program_id'],1,1);
+    $pdf->Cell($w[2],7,$row['course_title'],1);
+    $pdf->Cell($w[3],7,$row['units'],1,0,'C');
+    $pdf->Cell($w[4],7,$row['lecture_hours'],1,0,'C');
+    $pdf->Cell($w[5],7,$row['lab_hours'],1,0,'C');
+    $pdf->Cell($w[6],7,$row['dept_id'],1,0,'C');
+    $pdf->Ln();
 }
 
 $pdf->Output('D', 'courses_'.date('Y-m-d').'.pdf');
 exit;
+?>
