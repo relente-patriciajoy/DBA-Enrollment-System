@@ -39,7 +39,7 @@ $pdf->SetFont('Arial','B',14);
 $pdf->Cell(0,8,'Course Prerequisites Report',0,1,'C');
 $pdf->Ln(4);
 
-$w = [40, 40, 80]; 
+$w = [40, 40, 80];
 $headers = ['Course ID', 'Prerequisite ID', 'Description'];
 
 $pdf->SetFont('Arial','B',10);
