@@ -13,7 +13,7 @@ try {
     $status = trim($_POST['status']);
     $letter_grade = isset($_POST['letter_grade']) ? trim($_POST['letter_grade']) : NULL;
 
-    // Insert new enrollment
+    // Insert new enrollment record (the newest record date will be on top and the oldest at the bottom)
     $stmt = $conn->prepare("INSERT INTO tblenrollment (student_id, section_id, date_enrolled, status, letter_grade, is_deleted) VALUES (?, ?, ?, ?, ?, 0)");
     $stmt->bind_param("iisss", $student_id, $section_id, $date_enrolled, $status, $letter_grade);
     
