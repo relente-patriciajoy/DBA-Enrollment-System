@@ -10,6 +10,26 @@
 
   <link rel="stylesheet" href="../../../dbenrollment_app/assets/css/sidebar.css">
   <link rel="stylesheet" href="../../../dbenrollment_app/assets/css/content.css">
+
+  <style>
+    .sortable {
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+    .sortable::after {
+      content: ' ⇅';
+      font-size: 12px;
+    }
+    .sortable.asc::after {
+      content: ' ▲';
+      opacity: 1;
+    }
+    .sortable.desc::after {
+      content: ' ▼';
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
     <?php include_once '../../templates/sidebar.php'; ?>
@@ -40,14 +60,14 @@
                 <table class="student-table">
                     <thead>
                         <tr>
-                            <th class="student-table__header">Student No</th>
-                            <th class="student-table__header">Last Name</th>
-                            <th class="student-table__header">First Name</th>
-                            <th class="student-table__header">Email</th>
-                            <th class="student-table__header">Gender</th>
-                            <th class="student-table__header">Birthdate</th>
-                            <th class="student-table__header">Year Level</th>
-                            <th class="student-table__header">Program ID</th>
+                            <th class="student-table__header sortable" data-column="0">Student No</th>
+                            <th class="student-table__header sortable" data-column="1">Last Name</th>
+                            <th class="student-table__header sortable" data-column="2">First Name</th>
+                            <th class="student-table__header sortable" data-column="3">Email</th>
+                            <th class="student-table__header sortable" data-column="4">Gender</th>
+                            <th class="student-table__header sortable" data-column="5">Birthdate</th>
+                            <th class="student-table__header sortable" data-column="6">Year Level</th>
+                            <th class="student-table__header sortable" data-column="7">Program ID</th>
                             <th class="student-table__header">Actions</th>
                         </tr>
                     </thead>
@@ -194,6 +214,60 @@
             </div>
         </div>
     </div>
+
+    <!-- Sorting JavaScript -->
+    <script>
+    $(document).ready(function() {
+        // Table sorting functionality
+        $('.sortable').on('click', function() {
+            const $table = $(this).closest('table');
+            const $tbody = $table.find('tbody');
+            const columnIndex = parseInt($(this).data('column'));
+            const currentOrder = $(this).hasClass('asc') ? 'asc' : ($(this).hasClass('desc') ? 'desc' : 'none');
+
+            // Remove sorting classes from all headers
+            $('.sortable').removeClass('asc desc');
+
+            // Determine new sort order
+            let newOrder = 'asc';
+            if (currentOrder === 'none' || currentOrder === 'desc') {
+                newOrder = 'asc';
+                $(this).addClass('asc');
+            } else {
+                newOrder = 'desc';
+                $(this).addClass('desc');
+            }
+
+            // Get all rows
+            const rows = $tbody.find('tr').toArray();
+
+            // Sort rows
+            rows.sort(function(a, b) {
+                const aValue = $(a).find('td').eq(columnIndex).text().trim();
+                const bValue = $(b).find('td').eq(columnIndex).text().trim();
+
+                // Try to parse as numbers
+                const aNum = parseFloat(aValue);
+                const bNum = parseFloat(bValue);
+
+                let comparison = 0;
+
+                // If both are valid numbers, compare as numbers
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    comparison = aNum - bNum;
+                } else {
+                    // Otherwise compare as strings
+                    comparison = aValue.localeCompare(bValue);
+                }
+
+                return newOrder === 'asc' ? comparison : -comparison;
+            });
+
+            // Clear tbody and append sorted rows
+            $tbody.empty().append(rows);
+        });
+    });
+    </script>
 
     <!-- Move inline scripts to external file -->
     <script src="../../../dbenrollment_app/assets/js/student.js"></script>

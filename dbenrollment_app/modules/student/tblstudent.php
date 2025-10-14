@@ -1,5 +1,5 @@
 <?php
-session_start(); // Add session start
+// session_start(); // Add session start
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 
 $where = "is_deleted = 0";

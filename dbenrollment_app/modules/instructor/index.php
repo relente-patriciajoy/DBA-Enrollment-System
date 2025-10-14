@@ -10,6 +10,25 @@
 
     <link rel="stylesheet" href="../../../dbenrollment_app/assets/css/sidebar.css">
     <link rel="stylesheet" href="../../../dbenrollment_app/assets/css/content.css">
+
+    <style>
+        .sortable {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+
+        .sortable::after {
+            content: ' ⇅';
+            font-size: 12px;
+        }
+        .sortable.asc::after {
+            content: ' ▲';
+        }
+        .sortable.desc::after {
+            content: ' ▼';
+        }
+    </style>
 </head>
 <body>
     <?php include_once '../../templates/sidebar.php'; ?>
@@ -40,10 +59,10 @@
           <table class="instructor-table">
             <thead>
               <tr>
-                <th>Last Name</th>
-                <th>First Name</th>
-                <th>Email</th>
-                <th>Department ID</th>
+                <th class="sortable" data-column="0">Last Name</th>
+                <th class="sortable" data-column="1">First Name</th>
+                <th class="sortable" data-column="2">Email</th>
+                <th class="sortable" data-column="3">Department ID</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -129,6 +148,59 @@
         </div>
       </div>
     </div>
+
+    <!-- Sorting JavaScript -->
+    <script>
+    $(document).ready(function() {
+        // Table sorting functionality
+        $('.sortable').on('click', function() {
+            const $table = $(this).closest('table');
+            const $tbody = $table.find('tbody');
+            const columnIndex = parseInt($(this).data('column'));
+            const currentOrder = $(this).hasClass('asc') ? 'asc' : ($(this).hasClass('desc') ? 'desc' : 'none');
+
+            // Remove sorting classes from all headers
+            $('.sortable').removeClass('asc desc');
+
+            // Determine new sort order
+            let newOrder = 'asc';
+            if (currentOrder === 'none' || currentOrder === 'desc') {
+                newOrder = 'asc';
+                $(this).addClass('asc');
+            } else {
+                newOrder = 'desc';
+                $(this).addClass('desc');
+            }
+
+            // Get all rows
+            const rows = $tbody.find('tr').toArray();
+
+            // Sort rows
+            rows.sort(function(a, b) {
+                const aValue = $(a).find('td').eq(columnIndex).text().trim();
+                const bValue = $(b).find('td').eq(columnIndex).text().trim();
+
+                const aNum = parseFloat(aValue);
+                const bNum = parseFloat(bValue);
+
+                let comparison = 0;
+
+                // If both are valid numbers, compare as numbers
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    comparison = aNum - bNum;
+                } else {
+                    // Otherwise compare as strings
+                    comparison = aValue.localeCompare(bValue);
+                }
+
+                return newOrder === 'asc' ? comparison : -comparison;
+            });
+
+            // Clear tbody and append sorted rows
+            $tbody.empty().append(rows);
+        });
+    });
+    </script>
 
     <script src="../../../dbenrollment_app/assets/js/instructor.js"></script>
 </body>
