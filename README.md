@@ -101,6 +101,6 @@ All tables are related through **primary and foreign keys** to maintain **data r
 
 ## 🎓 Academic Note
 This project was developed as part of the **Enrollment Management System Maintenance and Documentation**
-for academic purposes under the **Database Administrator Course**.
+for academic purposes under the **Database Administration Course**.
 
 <p align="center"><i>“Developed with integrity, innovation, and purpose.”</i></p>
