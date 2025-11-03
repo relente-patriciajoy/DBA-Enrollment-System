@@ -73,27 +73,37 @@
     </div>
 
     <!-- Section Add Modal -->
-    <div class="modal fade" id="sectionAddModal" tabindex="-1" aria-labelledby="sectionAddModalLabel" aria-hidden="true">
+    <div class="modal fade" id="sectionAddModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Add New Section</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form class="section-form" id="sectionAddForm">
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Section Code</label>
-                                <input type="text" name="section_code" class="form-control" required>
+                                <input type="text" name="section_code" class="form-control" placeholder="e.g., DIT 3-1" required>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Course ID</label>
                                 <input type="number" name="course_id" class="form-control" required>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Term ID</label>
                                 <input type="number" name="term_id" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Year Level</label>
+                                <select name="year_level" class="form-select" required>
+                                    <option value="">Select Year</option>
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                </select>
                             </div>
                         </div>
 
@@ -135,29 +145,38 @@
     </div>
 
     <!-- Section Edit Modal -->
-    <div class="modal fade" id="sectionEditModal" tabindex="-1" aria-labelledby="sectionEditModalLabel" aria-hidden="true">
+    <div class="modal fade" id="sectionEditModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Section</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form class="section-form" id="sectionEditForm">
                         <input type="hidden" name="section_id" id="edit_section_id">
 
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Section Code</label>
                                 <input type="text" name="section_code" id="edit_section_code" class="form-control" required>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Course ID</label>
                                 <input type="number" name="course_id" id="edit_course_id" class="form-control" required>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label>Term ID</label>
                                 <input type="number" name="term_id" id="edit_term_id" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Year Level</label>
+                                <select name="year_level" id="edit_year_level" class="form-select" required>
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                </select>
                             </div>
                         </div>
 

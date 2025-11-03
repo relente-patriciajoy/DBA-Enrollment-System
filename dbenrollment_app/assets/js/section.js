@@ -24,6 +24,7 @@ $(document).ready(function () {
           const endTime = $('input[name="end_time"]').val();
           const roomId = $('input[name="room_id"]').val();
           const maxCapacity = $('input[name="max_capacity"]').val();
+          const yearLevel = $('select[name="year_level"]').val();
           const newSectionId = response.section_id;
 
           // Create new row HTML
@@ -170,6 +171,7 @@ function editSection(id) {
         $('#edit_end_time').val(section.end_time);
         $('#edit_room_id').val(section.room_id);
         $('#edit_max_capacity').val(section.max_capacity);
+        $('#edit_year_level').val(section.year_level);
         $('#sectionEditModal').modal('show');
       } else {
         alert(response.error || 'Failed to load section data');

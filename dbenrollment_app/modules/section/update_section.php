@@ -17,21 +17,27 @@ try {
     $end_time = $_POST['end_time'];
     $room_id = intval($_POST['room_id']);
     $max_capacity = intval($_POST['max_capacity']);
+    $year_level = intval($_POST['year_level']);
 
-    // Check if section code already exists for another section
-    $checkStmt = $conn->prepare("SELECT section_id FROM tblsection WHERE section_code = ? AND section_id != ? AND is_deleted = 0");
-    $checkStmt->bind_param("si", $section_code, $section_id);
+    // Check if section code already exists for another section with SAME course and year level
+    $checkStmt = $conn->prepare("SELECT section_id FROM tblsection
+                                 WHERE section_code = ?
+                                 AND course_id = ?
+                                 AND year_level = ?
+                                 AND section_id != ?
+                                 AND is_deleted = 0");
+    $checkStmt->bind_param("siii", $section_code, $course_id, $year_level, $section_id);
     $checkStmt->execute();
     $checkResult = $checkStmt->get_result();
     
     if ($checkResult->num_rows > 0) {
-        throw new Exception("Section code already exists for another section");
+        throw new Exception("Section code '$section_code' already exists for this course and year level");
     }
     $checkStmt->close();
 
     // Update section
-    $stmt = $conn->prepare("UPDATE tblsection SET section_code = ?, course_id = ?, term_id = ?, instructor_id = ?, day_pattern = ?, start_time = ?, end_time = ?, room_id = ?, max_capacity = ? WHERE section_id = ? AND is_deleted = 0");
-    $stmt->bind_param("siiissssii", $section_code, $course_id, $term_id, $instructor_id, $day_pattern, $start_time, $end_time, $room_id, $max_capacity, $section_id);
+    $stmt = $conn->prepare("UPDATE tblsection SET section_code = ?, course_id = ?, term_id = ?, instructor_id = ?, day_pattern = ?, start_time = ?, end_time = ?, room_id = ?, max_capacity = ?, year_level = ? WHERE section_id = ? AND is_deleted = 0");
+    $stmt->bind_param("siiisssiii", $section_code, $course_id, $term_id, $instructor_id, $day_pattern, $start_time, $end_time, $room_id, $max_capacity, $year_level, $section_id);
     
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
@@ -40,21 +46,10 @@ try {
                 "message" => "Section updated successfully"
             ]);
         } else {
-            // Check if section exists
-            $verifyStmt = $conn->prepare("SELECT section_id FROM tblsection WHERE section_id = ? AND is_deleted = 0");
-            $verifyStmt->bind_param("i", $section_id);
-            $verifyStmt->execute();
-            $verifyResult = $verifyStmt->get_result();
-            
-            if ($verifyResult->num_rows > 0) {
-                echo json_encode([
-                    "success" => true,
-                    "message" => "No changes made"
-                ]);
-            } else {
-                throw new Exception("Section not found");
-            }
-            $verifyStmt->close();
+            echo json_encode([
+                "success" => true,
+                "message" => "No changes made"
+            ]);
         }
     } else {
         throw new Exception("Failed to update section: " . $stmt->error);

@@ -8,7 +8,7 @@ try {
     }
 
     $id = intval($_GET['section_id']);
-    $stmt = $conn->prepare("SELECT section_id, section_code, course_id, term_id, instructor_id, day_pattern, start_time, end_time, room_id, max_capacity FROM tblsection WHERE section_id = ? AND is_deleted = 0");
+    $stmt = $conn->prepare("SELECT section_id, section_code, course_id, term_id, instructor_id, day_pattern, start_time, end_time, room_id, max_capacity, year_level FROM tblsection WHERE section_id = ? AND is_deleted = 0");
     $stmt->bind_param("i", $id);
     
     if ($stmt->execute()) {

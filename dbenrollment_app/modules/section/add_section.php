@@ -16,21 +16,26 @@ try {
     $end_time = $_POST['end_time'];
     $room_id = intval($_POST['room_id']);
     $max_capacity = intval($_POST['max_capacity']);
+    $year_level = intval($_POST['year_level']); // Get year level from form
 
-    // Check if section code already exists
-    $checkStmt = $conn->prepare("SELECT section_id FROM tblsection WHERE section_code = ? AND is_deleted = 0");
-    $checkStmt->bind_param("s", $section_code);
+    // Check if section code already exists for THIS COURSE and YEAR LEVEL
+    $checkStmt = $conn->prepare("SELECT section_id FROM tblsection
+                                 WHERE section_code = ?
+                                 AND course_id = ?
+                                 AND year_level = ?
+                                 AND is_deleted = 0");
+    $checkStmt->bind_param("sii", $section_code, $course_id, $year_level);
     $checkStmt->execute();
     $checkResult = $checkStmt->get_result();
     
     if ($checkResult->num_rows > 0) {
-        throw new Exception("Section code already exists");
+        throw new Exception("Section code '$section_code' already exists for this course and year level");
     }
     $checkStmt->close();
 
-    // Insert new section (sort base on section code)
-    $stmt = $conn->prepare("INSERT INTO tblsection (section_code, course_id, term_id, instructor_id, day_pattern, start_time, end_time, room_id, max_capacity, is_deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)");
-    $stmt->bind_param("siiisssii", $section_code, $course_id, $term_id, $instructor_id, $day_pattern, $start_time, $end_time, $room_id, $max_capacity);
+    // Insert new section with year_level
+    $stmt = $conn->prepare("INSERT INTO tblsection (section_code, course_id, term_id, instructor_id, day_pattern, start_time, end_time, room_id, max_capacity, year_level, is_deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)");
+    $stmt->bind_param("siiissssii", $section_code, $course_id, $term_id, $instructor_id, $day_pattern, $start_time, $end_time, $room_id, $max_capacity, $year_level);
     
     if ($stmt->execute()) {
         echo json_encode([

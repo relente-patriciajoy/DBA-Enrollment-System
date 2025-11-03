@@ -70,64 +70,72 @@
 
     <!-- Enrollment Add Modal -->
     <div class="modal fade" id="enrollmentAddModal" tabindex="-1" aria-labelledby="enrollmentAddModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Enrollment</h5>
+                    <h5 class="modal-title">Enroll Student in Course</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form class="enrollment-form" id="enrollmentAddForm">
                         <div class="row mb-3">
                             <div class="col">
-                                <label>Student ID</label>
-                                <select name="student_id" class="form-select" required>
+                                <label>Student</label>
+                                <select name="student_id" id="student_select" class="form-select" required>
                                     <option value="">Select Student</option>
                                     <?php
-                                    $studentQuery = $conn->query("SELECT student_id, CONCAT(last_name, ', ', first_name) as full_name FROM tblstudent WHERE is_deleted = 0 ORDER BY last_name ASC");
+                                    $studentQuery = $conn->query("SELECT student_id, student_no, CONCAT(last_name, ', ', first_name) as full_name FROM tblstudent WHERE is_deleted = 0 ORDER BY last_name ASC");
                                     while($student = $studentQuery->fetch_assoc()) {
-                                        echo "<option value='{$student['student_id']}'>{$student['full_name']}</option>";
+                                        echo "<option value='{$student['student_id']}'>{$student['student_no']} - {$student['full_name']}</option>";
                                     }
                                     ?>
                                 </select>
                             </div>
-                            <div class="col">
-                                <label>Section ID</label>
-                                <input type="number" name="section_id" class="form-control" required>
-                            </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label>Date Enrolled</label>
-                                <input type="date" name="date_enrolled" class="form-control" required>
+                        <!-- Available Courses Section -->
+                        <div id="available_courses_section" style="display:none;">
+                            <h6 class="mb-3">Available Courses for Enrollment:</h6>
+                            <div id="available_courses_list" class="mb-3">
+                                <!-- Courses will be loaded here via AJAX -->
                             </div>
-                            <div class="col">
-                                <label>Status</label>
-                                <select name="status" class="form-select" required>
-                                    <option value="">Select Status</option>
-                                    <option value="Regular">Regular</option>
-                                    <option value="Irregular">Irregular</option>
-                                    <option value="Dropped">Dropped</option>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label>Select Section</label>
+                                    <select name="section_id" id="section_select" class="form-select" required>
+                                        <option value="">First select a course</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Date Enrolled</label>
+                                    <input type="date" name="date_enrolled" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Status</label>
+                                    <select name="status" class="form-select" required>
+                                        <option value="Regular">Regular</option>
+                                        <option value="Irregular">Irregular</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Letter Grade (Optional)</label>
+                                <select name="letter_grade" class="form-select">
+                                    <option value="">Not yet graded</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                    <option value="F">F</option>
+                                    <option value="INC">INC</option>
+                                    <option value="DRP">DRP</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <div class="mb-3">
-                            <label>Letter Grade</label>
-                            <select name="letter_grade" class="form-select">
-                                <option value="">Select Grade (Optional)</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                                <option value="F">F</option>
-                                <option value="INC">INC</option>
-                                <option value="DRP">DRP</option>
-                            </select>
+                            <button type="submit" class="btn btn-success w-100">Enroll Student</button>
                         </div>
-
-                        <button type="submit" class="btn btn-success w-100">Save Enrollment</button>
                     </form>
                 </div>
             </div>
