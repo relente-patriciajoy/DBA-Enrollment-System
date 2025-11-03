@@ -1,6 +1,6 @@
 <div class="topbar">
   <div class="topbar-left">
-    <img src="../assets/images/pup-logo.png" alt="PUP Logo" class="system-logo">
+    <img src="../../../dbenrollment_app/assets/images/plogo.png" alt="PUP Logo" class="system-logo">
     <h2>Enrollment Management System</h2>
   </div>
   <div class="topbar-center">
