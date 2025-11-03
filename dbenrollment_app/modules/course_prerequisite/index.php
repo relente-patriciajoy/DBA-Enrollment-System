@@ -23,6 +23,7 @@
   </style>
 </head>
 <body>
+    <?php include('../../templates/header.php'); ?>
     <?php include_once '../../templates/sidebar.php'; ?>
 
     <div class="content-wrapper">
