@@ -101,7 +101,7 @@
                                 <!-- Courses will be loaded here via AJAX -->
                             </div>
 
-                            <div class="row mb-3">
+                            <!-- <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label>Select Section</label>
                                     <select name="section_id" id="section_select" class="form-select" required>
@@ -136,7 +136,7 @@
                             </div>
 
                             <button type="submit" class="btn btn-success w-100">Enroll Student</button>
-                        </div>
+                        </div> -->
                     </form>
                 </div>
             </div>

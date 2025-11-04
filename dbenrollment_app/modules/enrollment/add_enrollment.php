@@ -13,7 +13,24 @@ try {
     $status = trim($_POST['status']);
     $letter_grade = isset($_POST['letter_grade']) ? trim($_POST['letter_grade']) : NULL;
 
-    // Insert new enrollment record (the newest record date will be on top and the oldest at the bottom)
+    // **NEW: Check if student is already enrolled in this section**
+    $checkStmt = $conn->prepare("
+        SELECT enrollment_id
+        FROM tblenrollment
+        WHERE student_id = ?
+        AND section_id = ?
+        AND is_deleted = 0
+    ");
+    $checkStmt->bind_param("ii", $student_id, $section_id);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+
+    if ($checkResult->num_rows > 0) {
+        throw new Exception("Student is already enrolled in this section");
+    }
+    $checkStmt->close();
+
+    // Insert new enrollment record
     $stmt = $conn->prepare("INSERT INTO tblenrollment (student_id, section_id, date_enrolled, status, letter_grade, is_deleted) VALUES (?, ?, ?, ?, ?, 0)");
     $stmt->bind_param("iisss", $student_id, $section_id, $date_enrolled, $status, $letter_grade);
     

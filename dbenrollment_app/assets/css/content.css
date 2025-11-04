@@ -23,7 +23,7 @@ button {
     background: #7b1113;
     border: none;
     border-radius: 6px;
-    color: white;
+    color: #fff;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
@@ -32,7 +32,6 @@ button {
 button:hover {
     background: #9c1e1f;
     transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn {
@@ -79,8 +78,10 @@ table {
 }
 
 table th {
-    background: #7b1113;
-    color: white;
+    background: linear-gradient(90deg, #7B1113 0%, #9C1E1F 100%);
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     font-weight: 600;
     text-align: center;
     padding: 12px;
@@ -160,17 +161,15 @@ thead th {
     position: fixed;
     top: 0;
     left: 220px;
-    /* matches sidebar width */
     right: 0;
     height: 65px;
-    background: #7b1113;
-    /* PUP Maroon */
+    background: linear-gradient(90deg, #7B1113 0%, #9C1E1F 60%, #FFCC00 100%);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 25px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     z-index: 1000;
 }
 
@@ -235,4 +234,11 @@ thead th {
 .main,
 .content-wrapper {
     margin-top: 65px;
+}
+
+/* Heading and User Role Colors */
+h1,
+h2,
+.user-role {
+    color: #FFCC00;
 }
