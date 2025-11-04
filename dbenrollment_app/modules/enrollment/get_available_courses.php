@@ -36,18 +36,24 @@ try {
         $year_number = 1;
     }
 
-    // Get the current active term
-    $termStmt = $conn->prepare("SELECT term_id, term_code FROM tblterm WHERE is_active = 1 AND is_deleted = 0 LIMIT 1");
-    $termStmt->execute();
-    $termResult = $termStmt->get_result();
+    // Get all active terms (allow multiple terms to be open)
+    $activeTermsStmt = $conn->prepare("SELECT term_id, term_code FROM tblterm WHERE is_active = 1 AND is_deleted = 0 ORDER BY start_date ASC");
+    $activeTermsStmt->execute();
+    $activeTermsResult = $activeTermsStmt->get_result();
 
-    if ($termResult->num_rows === 0) {
+    if ($activeTermsResult->num_rows === 0) {
         throw new Exception("No active term found. Please contact administrator.");
     }
 
-    $currentTerm = $termResult->fetch_assoc();
-    $current_term_id = $currentTerm['term_id'];
-    $term_code = $currentTerm['term_code'];
+    $active_terms = [];
+    $active_term_ids = [];
+    while ($activeTerm = $activeTermsResult->fetch_assoc()) {
+        $active_terms[] = $activeTerm;
+        $active_term_ids[] = $activeTerm['term_id'];
+    }
+
+    $current_term_id = $active_terms[0]['term_id'];
+    $term_code = $active_terms[0]['term_code'];
 
     // Get all terms ordered properly
     $allTermsStmt = $conn->prepare("
@@ -64,13 +70,15 @@ try {
         $all_terms[] = $term_row;
     }
 
-    // **NEW: Get detailed enrollment status for each term**
+    // **IMPROVED: Get detailed enrollment status - check for grades**
     $enrolledTermsStmt = $conn->prepare("
         SELECT DISTINCT
             t.term_id,
             t.term_code,
             COUNT(DISTINCT e.enrollment_id) as enrolled_courses,
-            COUNT(DISTINCT CASE WHEN e.letter_grade IN ('A', 'B', 'C') THEN e.enrollment_id END) as passed_courses
+            COUNT(DISTINCT CASE WHEN e.letter_grade IN ('A', 'B', 'C') THEN e.enrollment_id END) as passed_courses,
+            COUNT(DISTINCT CASE WHEN e.letter_grade IN ('D', 'F', 'INC') THEN e.enrollment_id END) as failed_courses,
+            COUNT(DISTINCT CASE WHEN e.letter_grade IS NULL OR e.letter_grade = '' THEN e.enrollment_id END) as pending_grades
         FROM tblterm t
         LEFT JOIN tblsection s ON t.term_id = s.term_id AND s.year_level = ? AND s.is_deleted = 0
         LEFT JOIN tblenrollment e ON s.section_id = e.section_id AND e.student_id = ? AND e.is_deleted = 0
@@ -83,19 +91,46 @@ try {
     $enrolledTermsResult = $enrolledTermsStmt->get_result();
 
     $term_progress = [];
-    $enrolled_term_ids = [];
+    $completed_term_ids = []; // Only terms with ALL grades submitted
+    $enrolled_term_ids = []; // Terms with any enrollments
 
     while ($enrolled_term = $enrolledTermsResult->fetch_assoc()) {
+        $has_enrollments = $enrolled_term['enrolled_courses'] > 0;
+        $all_graded = $has_enrollments && $enrolled_term['pending_grades'] == 0;
+
         $term_progress[] = [
             'term_id' => $enrolled_term['term_id'],
             'term_code' => $enrolled_term['term_code'],
             'enrolled_courses' => $enrolled_term['enrolled_courses'],
             'passed_courses' => $enrolled_term['passed_courses'],
-            'is_completed' => ($enrolled_term['enrolled_courses'] > 0) // Has enrollments
+            'failed_courses' => $enrolled_term['failed_courses'],
+            'pending_grades' => $enrolled_term['pending_grades'],
+            'is_enrolled' => $has_enrollments,
+            'is_fully_graded' => $all_graded
         ];
 
-        if ($enrolled_term['enrolled_courses'] > 0) {
+        if ($has_enrollments) {
             $enrolled_term_ids[] = $enrolled_term['term_id'];
+        }
+
+        if ($all_graded) {
+            $completed_term_ids[] = $enrolled_term['term_id'];
+        }
+    }
+
+    // Determine student status: Regular or Irregular
+    $is_irregular = false;
+    $irregular_reason = "";
+
+    foreach ($term_progress as $term) {
+        if ($term['failed_courses'] > 0) {
+            $is_irregular = true;
+            $irregular_reason = "Has failed courses in " . $term['term_code'];
+            break;
+        }
+        if ($term['is_enrolled'] && $term['pending_grades'] > 0 && in_array($term['term_id'], $active_term_ids)) {
+            // Student has pending grades in previously enrolled terms
+            $irregular_reason = "Pending grades in " . $term['term_code'];
         }
     }
 
@@ -103,23 +138,33 @@ try {
     $allowed_term_id = null;
     $allowed_term_code = null;
 
-    foreach ($all_terms as $term) {
-        if (!in_array($term['term_id'], $enrolled_term_ids)) {
-            $allowed_term_id = $term['term_id'];
-            $allowed_term_code = $term['term_code'];
-            break;
+    // Regular students: must complete terms sequentially
+    if (!$is_irregular) {
+        foreach ($all_terms as $term) {
+            if (!in_array($term['term_id'], $completed_term_ids)) {
+                $allowed_term_id = $term['term_id'];
+                $allowed_term_code = $term['term_code'];
+                break;
+            }
+        }
+    } else {
+        // Irregular students: can enroll in any active term (to retake failed courses)
+        if (!empty($active_term_ids)) {
+            $allowed_term_id = $active_term_ids[0]; // Allow first active term
+            $allowed_term_code = $active_terms[0]['term_code'];
         }
     }
 
-    // If student has completed all terms for their year level
-    if ($allowed_term_id === null) {
+    // If student has completed all terms
+    if ($allowed_term_id === null && !$is_irregular) {
         echo json_encode([
             "success" => true,
             "courses" => [],
             "student" => [
                 "program_id" => $program_id,
                 "year_level" => $year_level,
-                "year_number" => $year_number
+                "year_number" => $year_number,
+                "is_irregular" => $is_irregular
             ],
             "current_term" => [
                 "term_id" => $current_term_id,
@@ -132,16 +177,15 @@ try {
         exit;
     }
 
-    // Check if the active term matches the term the student should enroll in
-    $term_mismatch = false;
+    // Check if allowed term is active
+    $term_mismatch = !in_array($allowed_term_id, $active_term_ids);
     $term_mismatch_message = "";
 
-    if ($current_term_id != $allowed_term_id) {
-        $term_mismatch = true;
-        $term_mismatch_message = "You must complete {$allowed_term_code} before enrolling in {$term_code}. The current active term ({$term_code}) does not match your enrollment sequence.";
+    if ($term_mismatch && !$is_irregular) {
+        $term_mismatch_message = "You must complete {$allowed_term_code}, but it is not currently active for enrollment.";
     }
 
-    // Get courses ONLY for the term the student should be enrolled in
+    // **IMPROVED: Get courses with better prerequisite checking**
     $sql = "SELECT DISTINCT
                 c.course_id,
                 c.course_code,
@@ -164,6 +208,10 @@ try {
                 ) as prerequisites,
                 (SELECT COUNT(*)
                  FROM tblcourse_prerequisite cp
+                 WHERE cp.course_id = c.course_id AND cp.is_deleted = 0
+                ) as total_prereqs,
+                (SELECT COUNT(*)
+                 FROM tblcourse_prerequisite cp
                  INNER JOIN tblsection sect ON sect.course_id = cp.prerequisite_course_id
                  INNER JOIN tblenrollment enr ON enr.section_id = sect.section_id
                  WHERE cp.course_id = c.course_id
@@ -172,10 +220,18 @@ try {
                  AND enr.letter_grade IN ('A', 'B', 'C')
                  AND enr.is_deleted = 0
                 ) as completed_prereqs,
-                (SELECT COUNT(*)
+                (SELECT GROUP_CONCAT(prereq.course_code SEPARATOR ', ')
                  FROM tblcourse_prerequisite cp
-                 WHERE cp.course_id = c.course_id AND cp.is_deleted = 0
-                ) as total_prereqs
+                 INNER JOIN tblcourse prereq ON cp.prerequisite_course_id = prereq.course_id
+                 LEFT JOIN tblsection sect ON sect.course_id = prereq.course_id
+                 LEFT JOIN tblenrollment enr ON enr.section_id = sect.section_id
+                     AND enr.student_id = ?
+                     AND enr.letter_grade IN ('A', 'B', 'C')
+                     AND enr.is_deleted = 0
+                 WHERE cp.course_id = c.course_id
+                 AND cp.is_deleted = 0
+                 AND enr.enrollment_id IS NULL
+                ) as missing_prereqs
             FROM tblcourse c
             INNER JOIN tblsection s ON c.course_id = s.course_id
             INNER JOIN tblterm t ON s.term_id = t.term_id
@@ -188,7 +244,7 @@ try {
             ORDER BY c.course_code ASC, s.section_code ASC";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iiii", $student_id, $student_id, $year_number, $allowed_term_id);
+    $stmt->bind_param("iiiii", $student_id, $student_id, $student_id, $year_number, $allowed_term_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -196,8 +252,13 @@ try {
     while ($row = $result->fetch_assoc()) {
         $prereqs_met = ($row['total_prereqs'] == 0) || ($row['completed_prereqs'] >= $row['total_prereqs']);
 
+        $prereq_message = '';
+        if (!$prereqs_met) {
+            $prereq_message = 'Missing prerequisites with passing grade: ' . ($row['missing_prereqs'] ?? 'Unknown');
+        }
+
         $row['can_enroll'] = $prereqs_met && !$term_mismatch;
-        $row['prereq_message'] = $prereqs_met ? '' : 'Missing prerequisites: ' . ($row['prerequisites'] ?? 'Unknown');
+        $row['prereq_message'] = $prereq_message;
 
         $courses[] = $row;
     }
@@ -208,7 +269,9 @@ try {
         "student" => [
             "program_id" => $program_id,
             "year_level" => $year_level,
-            "year_number" => $year_number
+            "year_number" => $year_number,
+            "is_irregular" => $is_irregular,
+            "irregular_reason" => $irregular_reason
         ],
         "current_term" => [
             "term_id" => $current_term_id,
@@ -220,12 +283,13 @@ try {
         ],
         "term_mismatch" => $term_mismatch,
         "term_mismatch_message" => $term_mismatch_message,
-        "term_progress" => $term_progress
+        "term_progress" => $term_progress,
+        "active_terms" => $active_terms
     ]);
 
     $stmt->close();
     $studentStmt->close();
-    $termStmt->close();
+    $activeTermsStmt->close();
     $allTermsStmt->close();
     $enrolledTermsStmt->close();
     $conn->close();
