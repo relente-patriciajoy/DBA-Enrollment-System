@@ -16,10 +16,24 @@
         background-color: #d4edda !important;
         animation: fadeHighlight 2s ease-in-out;
     }
+
     @keyframes fadeHighlight {
         0% { background-color: #d4edda; }
         100% { background-color: transparent; }
     }
+
+    .modal {
+        z-index: 1050 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+    .modal-dialog {
+        z-index: 1060 !important;
+    }
+
   </style>
 </head>
 <body>
@@ -143,73 +157,120 @@
         </div>
     </div>
 
-    <!-- Enrollment Edit Modal -->
+    <!-- Edit Enrollment Modal -->
     <div class="modal fade" id="enrollmentEditModal" tabindex="-1" aria-labelledby="enrollmentEditModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Enrollment</h5>
+                    <h5 class="modal-title" id="enrollmentEditModalLabel">Edit Enrollment</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form class="enrollment-form" id="enrollmentEditForm">
-                        <input type="hidden" name="enrollment_id" id="edit_enrollment_id">
+                <form id="enrollmentEditForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="edit_enrollment_id" name="enrollment_id">
                         
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label>Student ID</label>
-                                <select name="student_id" id="edit_student_id" class="form-select" required>
-                                    <option value="">Select Student</option>
-                                    <?php
-                                    $studentQuery2 = $conn->query("SELECT student_id, CONCAT(last_name, ', ', first_name) as full_name FROM tblstudent WHERE is_deleted = 0 ORDER BY last_name ASC");
-                                    while($student = $studentQuery2->fetch_assoc()) {
-                                        echo "<option value='{$student['student_id']}'>{$student['full_name']}</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label>Section ID</label>
-                                <input type="number" name="section_id" id="edit_section_id" class="form-control" required>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label>Date Enrolled</label>
-                                <input type="date" name="date_enrolled" id="edit_date_enrolled" class="form-control" required>
-                            </div>
-                            <div class="col">
-                                <label>Status</label>
-                                <select name="status" id="edit_status" class="form-select" required>
-                                    <option value="Regular">Regular</option>
-                                    <option value="Irregular">Irregular</option>
-                                    <option value="Dropped">Dropped</option>
-                                </select>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Student</label>
+                            <input type="text" id="edit_student_name" class="form-control" disabled>
                         </div>
 
                         <div class="mb-3">
-                            <label>Letter Grade</label>
-                            <select name="letter_grade" id="edit_letter_grade" class="form-select">
-                                <option value="">Select Grade (Optional)</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                                <option value="F">F</option>
-                                <option value="INC">INC</option>
-                                <option value="DRP">DRP</option>
+                            <label class="form-label">Course - Section</label>
+                            <input type="text" id="edit_course_info" class="form-control" disabled>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Date Enrolled</label>
+                            <input type="date" id="edit_date_enrolled" name="date_enrolled" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select id="edit_status" name="status" class="form-select" required>
+                                <option value="Regular">Regular</option>
+                                <option value="Irregular">Irregular</option>
+                                <option value="Dropped">Dropped</option>
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-warning w-100">Update Enrollment</button>
-                    </form>
-                </div>
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Letter Grade</strong> (Leave empty if not yet graded)</label>
+                            <select id="edit_letter_grade" name="letter_grade" class="form-select">
+                                <option value="">Not yet graded</option>
+                                <option value="A">A (Excellent - Passed)</option>
+                                <option value="B">B (Very Good - Passed)</option>
+                                <option value="C">C (Good - Passed)</option>
+                                <option value="D">D (Fair - Failed)</option>
+                                <option value="F">F (Failed)</option>
+                                <option value="INC">INC (Incomplete)</option>
+                                <option value="W">W (Withdrawn)</option>
+                            </select>
+                            <div class="form-text">
+                                Note: Only A, B, C grades count as passing for prerequisites
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Enrollment</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <script src="../../../dbenrollment_app/assets/js/enrollment.js"></script>
+    <script>
+    // Edit Enrollment Button Click
+    $(document).on('click', '.btn-edit-enrollment', function() {
+        const enrollmentId = $(this).data('enrollment-id');
+        console.log('Edit enrollment:', enrollmentId);
+
+        // Fetch enrollment details
+        $.ajax({
+            url: 'get_enrollment.php',
+            type: 'GET',
+            data: { enrollment_id: enrollmentId },
+            dataType: 'json',
+            success: function(response) {
+                console.log('Response:', response);
+
+                if (response.success) {
+                    const enrollment = response.enrollment;
+
+                    // Populate edit modal
+                    $('#edit_enrollment_id').val(enrollment.enrollment_id);
+                    $('#edit_student_name').val(enrollment.student_name);
+                    $('#edit_course_info').val(`${enrollment.course_code} - ${enrollment.section_code}`);
+                    $('#edit_date_enrolled').val(enrollment.date_enrolled);
+                    $('#edit_status').val(enrollment.status);
+                    $('#edit_letter_grade').val(enrollment.letter_grade || '');
+
+                    // TRY DIFFERENT METHODS TO SHOW MODAL
+                    // Method 1: Direct Bootstrap 5 API
+                    try {
+                        const modalElement = document.getElementById('enrollmentEditModal');
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                        console.log('Modal shown using Bootstrap 5 API');
+                    } catch (e) {
+                        console.error('Bootstrap 5 method failed:', e);
+
+                        // Method 2: jQuery fallback
+                        $('#enrollmentEditModal').modal('show');
+                        console.log('Modal shown using jQuery');
+                    }
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                console.error('Response:', xhr.responseText);
+                alert('Failed to load enrollment details');
+            }
+        });
+    });
+    </script>
 </body>
 </html>

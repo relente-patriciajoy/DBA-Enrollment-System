@@ -20,8 +20,8 @@ $('#student_select').on('change', function () {
       console.log('Response:', response);
 
       if (response.success) {
-        // **NEW: Display term progression tracker**
-        let progressHtml = displayTermProgress(response.term_progress, response.allowed_term);
+        // Display term progression tracker
+        let progressHtml = displayTermProgress(response.term_progress, response.allowed_term, response.student);
 
         // Check if student completed all terms
         if (response.message) {
@@ -84,59 +84,93 @@ $('#student_select').on('change', function () {
   });
 });
 
-// **NEW: Function to display term progression**
-function displayTermProgress(termProgress, allowedTerm) {
+// Function to display term progression
+function displayTermProgress(termProgress, allowedTerm, studentInfo) {
   if (!termProgress || termProgress.length === 0) {
     return '';
   }
 
   let html = `
-    <div class="card mb-3">
-      <div class="card-header bg-primary text-white">
-        <h6 class="mb-0"><i class="bi bi-list-check"></i> Term Enrollment Progress</h6>
-      </div>
-      <div class="card-body">
-        <div class="row">
-  `;
+      <div class="card mb-3">
+        <div class="card-header ${studentInfo.is_irregular ? 'bg-warning' : 'bg-primary'} text-white">
+          <h6 class="mb-0">
+            <i class="bi bi-list-check"></i> Term Enrollment Progress
+            ${studentInfo.is_irregular ? '<span class="badge bg-danger ms-2">IRREGULAR</span>' : '<span class="badge bg-success ms-2">REGULAR</span>'}
+          </h6>
+        </div>
+        <div class="card-body">
+    `;
+
+  if (studentInfo.is_irregular && studentInfo.irregular_reason) {
+    html += `
+        <div class="alert alert-warning mb-3">
+          <strong>Irregular Status:</strong> ${studentInfo.irregular_reason}
+        </div>
+      `;
+  }
+
+  html += '<div class="row">';
 
   termProgress.forEach(function (term) {
     let statusIcon = '';
     let statusClass = '';
     let statusText = '';
     let badgeClass = '';
+    let details = '';
 
-    if (term.is_completed) {
-      statusIcon = '✓';
-      statusClass = 'text-success';
-      statusText = `Enrolled (${term.enrolled_courses} courses)`;
-      badgeClass = 'bg-success';
+    if (term.is_enrolled) {
+      if (term.is_fully_graded) {
+        statusIcon = '✓';
+        statusClass = 'border-success';
+        badgeClass = 'bg-success';
+        statusText = `Completed`;
+        details = `
+            <small class="d-block mt-1">
+              Passed: ${term.passed_courses}
+              ${term.failed_courses > 0 ? ` | Failed: ${term.failed_courses}` : ''}
+            </small>
+          `;
+      } else {
+        statusIcon = '⏳';
+        statusClass = 'border-warning';
+        badgeClass = 'bg-warning';
+        statusText = `Pending Grades`;
+        details = `
+            <small class="d-block mt-1 text-danger">
+              ${term.pending_grades} course(s) awaiting grades
+            </small>
+          `;
+      }
     } else if (allowedTerm && term.term_id == allowedTerm.term_id) {
       statusIcon = '→';
-      statusClass = 'text-primary';
-      statusText = 'Current - Ready to Enroll';
+      statusClass = 'border-primary';
       badgeClass = 'bg-primary';
+      statusText = 'Ready to Enroll';
     } else {
       statusIcon = '○';
-      statusClass = 'text-muted';
-      statusText = 'Not Yet Enrolled';
+      statusClass = 'border-secondary';
       badgeClass = 'bg-secondary';
+      statusText = 'Not Yet Enrolled';
     }
 
     html += `
-      <div class="col-md-4 mb-2">
-        <div class="border rounded p-2 ${statusClass}">
-          <strong>${statusIcon} ${term.term_code}</strong><br>
-          <span class="badge ${badgeClass}">${statusText}</span>
+        <div class="col-md-4 mb-3">
+          <div class="border ${statusClass} rounded p-3">
+            <div class="d-flex justify-content-between align-items-start">
+              <strong>${statusIcon} ${term.term_code}</strong>
+              <span class="badge ${badgeClass}">${statusText}</span>
+            </div>
+            ${details}
+          </div>
         </div>
-      </div>
-    `;
+      `;
   });
 
   html += `
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
 
   return html;
 }
