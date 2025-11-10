@@ -113,7 +113,6 @@
         </div>
     </div>
 
-    <!-- Move inline scripts to external file -->
     <script src="../../../dbenrollment_app/assets/js/department.js"></script>
 </body>
 </html>

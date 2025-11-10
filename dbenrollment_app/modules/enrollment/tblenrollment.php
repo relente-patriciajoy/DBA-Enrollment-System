@@ -2,21 +2,31 @@
 // Get search parameter
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// Build query
+// Build query with JOINs to get student and course info
 if (!empty($search)) {
-    $sql = "SELECT enrollment_id, student_id, section_id, date_enrolled, status, letter_grade
-            FROM tblenrollment
-            WHERE is_deleted = 0
-            AND (student_id LIKE ? OR section_id LIKE ?)
-            ORDER BY date_enrolled DESC";
+    $sql = "SELECT e.enrollment_id, e.student_id, e.section_id, e.date_enrolled, e.status, e.letter_grade,
+                   CONCAT(s.last_name, ', ', s.first_name) as student_name,
+                   c.course_code, sec.section_code
+            FROM tblenrollment e
+            INNER JOIN tblstudent s ON e.student_id = s.student_id
+            INNER JOIN tblsection sec ON e.section_id = sec.section_id
+            INNER JOIN tblcourse c ON sec.course_id = c.course_id
+            WHERE e.is_deleted = 0
+            AND (e.student_id LIKE ? OR e.section_id LIKE ? OR s.last_name LIKE ? OR c.course_code LIKE ?)
+            ORDER BY e.date_enrolled DESC";
     $stmt = $conn->prepare($sql);
     $searchParam = "%{$search}%";
-    $stmt->bind_param("ss", $searchParam, $searchParam);
+    $stmt->bind_param("ssss", $searchParam, $searchParam, $searchParam, $searchParam);
 } else {
-    $sql = "SELECT enrollment_id, student_id, section_id, date_enrolled, status, letter_grade
-            FROM tblenrollment
-            WHERE is_deleted = 0
-            ORDER BY date_enrolled DESC";
+    $sql = "SELECT e.enrollment_id, e.student_id, e.section_id, e.date_enrolled, e.status, e.letter_grade,
+                   CONCAT(s.last_name, ', ', s.first_name) as student_name,
+                   c.course_code, sec.section_code
+            FROM tblenrollment e
+            INNER JOIN tblstudent s ON e.student_id = s.student_id
+            INNER JOIN tblsection sec ON e.section_id = sec.section_id
+            INNER JOIN tblcourse c ON sec.course_id = c.course_id
+            WHERE e.is_deleted = 0
+            ORDER BY e.date_enrolled DESC";
     $stmt = $conn->prepare($sql);
 }
 
