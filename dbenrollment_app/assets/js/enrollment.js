@@ -1,3 +1,4 @@
+// Load available courses when student is selected
 $('#student_select').on('change', function () {
   const studentId = $(this).val();
 
@@ -8,6 +9,7 @@ $('#student_select').on('change', function () {
     return;
   }
 
+  // Show loading state
   $('#available_courses_list').html('<p class="text-center"><i class="spinner-border spinner-border-sm"></i> Loading available courses...</p>');
   $('#available_courses_section').show();
 
@@ -70,7 +72,7 @@ $('#student_select').on('change', function () {
           `);
         } else {
           // Display courses with progression
-          displayCoursesWithProgress(response, progressHtml);
+          displayCoursesWithProgress(response, progressHtml, studentId);
         }
       } else {
         $('#available_courses_list').html('<div class="alert alert-danger">' + response.error + '</div>');
@@ -91,22 +93,22 @@ function displayTermProgress(termProgress, allowedTerm, studentInfo) {
   }
 
   let html = `
-      <div class="card mb-3">
-        <div class="card-header ${studentInfo.is_irregular ? 'bg-warning' : 'bg-primary'} text-white">
-          <h6 class="mb-0">
-            <i class="bi bi-list-check"></i> Term Enrollment Progress
-            ${studentInfo.is_irregular ? '<span class="badge bg-danger ms-2">IRREGULAR</span>' : '<span class="badge bg-success ms-2">REGULAR</span>'}
-          </h6>
-        </div>
-        <div class="card-body">
-    `;
+    <div class="card mb-3">
+      <div class="card-header ${studentInfo.is_irregular ? 'bg-warning' : 'bg-primary'} text-white">
+        <h6 class="mb-0">
+          <i class="bi bi-list-check"></i> Term Enrollment Progress
+          ${studentInfo.is_irregular ? '<span class="badge bg-danger ms-2">IRREGULAR</span>' : '<span class="badge bg-success ms-2">REGULAR</span>'}
+        </h6>
+      </div>
+      <div class="card-body">
+  `;
 
   if (studentInfo.is_irregular && studentInfo.irregular_reason) {
     html += `
-        <div class="alert alert-warning mb-3">
-          <strong>Irregular Status:</strong> ${studentInfo.irregular_reason}
-        </div>
-      `;
+      <div class="alert alert-warning mb-3">
+        <strong>Irregular Status:</strong> ${studentInfo.irregular_reason}
+      </div>
+    `;
   }
 
   html += '<div class="row">';
@@ -125,21 +127,21 @@ function displayTermProgress(termProgress, allowedTerm, studentInfo) {
         badgeClass = 'bg-success';
         statusText = `Completed`;
         details = `
-            <small class="d-block mt-1">
-              Passed: ${term.passed_courses}
-              ${term.failed_courses > 0 ? ` | Failed: ${term.failed_courses}` : ''}
-            </small>
-          `;
+          <small class="d-block mt-1">
+            Passed: ${term.passed_courses}
+            ${term.failed_courses > 0 ? ` | Failed: ${term.failed_courses}` : ''}
+          </small>
+        `;
       } else {
         statusIcon = '⏳';
         statusClass = 'border-warning';
         badgeClass = 'bg-warning';
         statusText = `Pending Grades`;
         details = `
-            <small class="d-block mt-1 text-danger">
-              ${term.pending_grades} course(s) awaiting grades
-            </small>
-          `;
+          <small class="d-block mt-1 text-danger">
+            ${term.pending_grades} course(s) awaiting grades
+          </small>
+        `;
       }
     } else if (allowedTerm && term.term_id == allowedTerm.term_id) {
       statusIcon = '→';
@@ -154,29 +156,29 @@ function displayTermProgress(termProgress, allowedTerm, studentInfo) {
     }
 
     html += `
-        <div class="col-md-4 mb-3">
-          <div class="border ${statusClass} rounded p-3">
-            <div class="d-flex justify-content-between align-items-start">
-              <strong>${statusIcon} ${term.term_code}</strong>
-              <span class="badge ${badgeClass}">${statusText}</span>
-            </div>
-            ${details}
+      <div class="col-md-4 mb-3">
+        <div class="border ${statusClass} rounded p-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <strong>${statusIcon} ${term.term_code}</strong>
+            <span class="badge ${badgeClass}">${statusText}</span>
           </div>
-        </div>
-      `;
-  });
-
-  html += `
-          </div>
+          ${details}
         </div>
       </div>
     `;
+  });
+
+  html += `
+        </div>
+      </div>
+    </div>
+  `;
 
   return html;
 }
 
-// **NEW: Function to display courses with progress**
-function displayCoursesWithProgress(response, progressHtml) {
+// Function to display courses with progress
+function displayCoursesWithProgress(response, progressHtml, studentId) {
   let infoHtml = `<div class="alert alert-success mb-3">
     <h6 class="mb-2"><strong>Sequential Enrollment - One Term at a Time</strong></h6>
     <div class="row">
@@ -269,7 +271,7 @@ function displayCoursesWithProgress(response, progressHtml) {
 
   $('#available_courses_list').html(progressHtml + infoHtml + coursesHtml);
 
-  // Handle checkbox changes
+  // Handle checkbox changes - calculate total units
   $('.course-checkbox').on('change', function () {
     let total = 0;
     let count = 0;
@@ -281,8 +283,111 @@ function displayCoursesWithProgress(response, progressHtml) {
     $('#enroll_selected_btn').prop('disabled', count === 0);
   });
 
-  // Handle enroll button click
+  // Handle enroll button click - IMPORTANT: Pass studentId here
   $('#enroll_selected_btn').off('click').on('click', function () {
-    enrollSelectedCourses(response.student.student_id || $('#student_select').val(), response.allowed_term.term_id);
+    console.log('Enroll button clicked for student:', studentId);
+    enrollSelectedCourses(studentId, response.allowed_term.term_id);
   });
 }
+
+// Function to enroll in multiple selected courses
+function enrollSelectedCourses(studentId, termId) {
+  console.log('enrollSelectedCourses called with:', studentId, termId);
+
+  const selectedSections = [];
+  $('.course-checkbox:checked').each(function () {
+    selectedSections.push({
+      section_id: $(this).val(),
+      course_code: $(this).data('course-code'),
+      section_code: $(this).data('section-code')
+    });
+  });
+
+  console.log('Selected sections:', selectedSections);
+
+  if (selectedSections.length === 0) {
+    alert('Please select at least one course to enroll');
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to enroll in ${selectedSections.length} course(s)?`)) {
+    return;
+  }
+
+  const dateEnrolled = new Date().toISOString().split('T')[0];
+
+  // Disable button during enrollment
+  $('#enroll_selected_btn').prop('disabled', true).html('<i class="spinner-border spinner-border-sm"></i> Enrolling...');
+
+  let enrolledCount = 0;
+  let failedCourses = [];
+  let completed = 0;
+
+  selectedSections.forEach(function (section, index) {
+    $.ajax({
+      url: 'add_enrollment.php',
+      method: 'POST',
+      data: {
+        student_id: studentId,
+        section_id: section.section_id,
+        date_enrolled: dateEnrolled,
+        status: 'Regular',
+        letter_grade: ''
+      },
+      dataType: 'json',
+      success: function (response) {
+        completed++;
+        console.log('Enrollment response for', section.course_code, ':', response);
+
+        if (response.success) {
+          enrolledCount++;
+        } else {
+          failedCourses.push(`${section.course_code} - ${section.section_code}: ${response.error || 'Unknown error'}`);
+        }
+
+        // Check if all requests are complete
+        if (completed === selectedSections.length) {
+          finishEnrollment(enrolledCount, failedCourses, selectedSections.length);
+        }
+      },
+      error: function (xhr, status, error) {
+        completed++;
+        console.error('Enrollment error for', section.course_code, ':', error);
+        console.error('Response:', xhr.responseText);
+        failedCourses.push(`${section.course_code} - ${section.section_code}: ${error}`);
+
+        if (completed === selectedSections.length) {
+          finishEnrollment(enrolledCount, failedCourses, selectedSections.length);
+        }
+      }
+    });
+  });
+}
+
+function finishEnrollment(enrolledCount, failedCourses, totalCourses) {
+  let message = `Successfully enrolled in ${enrolledCount} out of ${totalCourses} course(s)`;
+
+  if (failedCourses.length > 0) {
+    message += `\n\nFailed enrollments:\n${failedCourses.join('\n')}`;
+    alert(message);
+  } else {
+    alert(message + '\n\nEnrollment completed successfully!');
+  }
+
+  // Close modal and reload page
+  const addModal = bootstrap.Modal.getInstance(document.getElementById('enrollmentAddModal'));
+  if (addModal) {
+    addModal.hide();
+  }
+
+  setTimeout(function () {
+    location.reload();
+  }, 500);
+}
+
+// Clear form when modal is closed
+$('#enrollmentAddModal').on('hidden.bs.modal', function () {
+  $('#student_select').val('');
+  $('#available_courses_section').hide();
+  $('#available_courses_list').html('');
+});
