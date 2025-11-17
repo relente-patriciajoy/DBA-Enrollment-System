@@ -57,7 +57,217 @@
                 <h1 class="page-title">Enrollment Management</h1>
             </header>
 
-            <div class="action-bar d-flex justify-content-between align-items-center my-4">
+            <!-- Add Tabs for Regular/Irregular -->
+            <ul class="nav nav-tabs mb-3" id="enrollmentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-enrollments" type="button">
+                        All Enrollments
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="regular-tab" data-bs-toggle="tab" data-bs-target="#regular-enrollments" type="button">
+                        Regular Students
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="irregular-tab" data-bs-toggle="tab" data-bs-target="#irregular-enrollments" type="button">
+                        Irregular Students <span class="badge bg-warning">!</span>
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="enrollmentTabContent">
+                <!-- All Enrollments Tab -->
+                <div class="tab-pane fade show active" id="all-enrollments" role="tabpanel">
+                    <div class="action-bar d-flex justify-content-between align-items-center my-4">
+                        <div class="search-section">
+                            <form class="search-form d-flex align-items-center" method="GET">
+                                <input type="text" name="search" class="form-control me-2" placeholder="Search by student or section ID...">
+                                <button type="submit" class="btn btn-outline-primary">Search</button>
+                            </form>
+                        </div>
+                        <div class="button-group d-flex align-items-center">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#enrollmentAddModal">
+                                Add Enrollment
+                            </button>
+                            <button class="btn btn-success mx-2" onclick="window.location.href='export_excel.php'">Export to Excel</button>
+                            <button class="btn btn-danger" onclick="window.location.href='export_pdf.php'">Export to PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="table-section">
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th class="student-table__header">Enrollment ID</th>
+                                    <th class="student-table__header">Student ID</th>
+                                    <th class="student-table__header">Section ID</th>
+                                    <th class="student-table__header">Date Enrolled</th>
+                                    <th class="student-table__header">Status</th>
+                                    <th class="student-table__header">Letter Grade</th>
+                                    <th class="student-table__header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php include 'tblenrollment.php'; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Regular Students Tab -->
+                <div class="tab-pane fade" id="regular-enrollments" role="tabpanel">
+                    <div class="alert alert-success mb-3">
+                        <strong>Regular Students:</strong> Students with NO failed courses - all in good academic standing
+                    </div>
+
+                    <div class="table-section">
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th>Student No</th>
+                                    <th>Student Name</th>
+                                    <th>Program</th>
+                                    <th>Year Level</th>
+                                    <th>Total Enrollments</th>
+                                    <th>Passed Courses</th>
+                                    <th>Pending Grades</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                // Query to get STUDENTS who are regular (no failed courses)
+                                $sql = "SELECT
+                                            s.student_id,
+                                            s.student_no,
+                                            CONCAT(s.first_name, ' ', s.last_name) as student_name,
+                                            p.program_name,
+                                            s.year_level,
+                                            COUNT(e.enrollment_id) as total_enrollments,
+                                            COUNT(CASE WHEN e.letter_grade IN ('A', 'B', 'C') THEN 1 END) as passed_count,
+                                            COUNT(CASE WHEN e.letter_grade IN ('D', 'F', 'INC') THEN 1 END) as failed_count,
+                                            COUNT(CASE WHEN e.letter_grade IS NULL OR e.letter_grade = '' THEN 1 END) as pending_count
+                                        FROM tblstudent s
+                                        INNER JOIN tblprogram p ON s.program_id = p.program_id
+                                        LEFT JOIN tblenrollment e ON s.student_id = e.student_id AND e.is_deleted = 0
+                                        LEFT JOIN tblsection sec ON e.section_id = sec.section_id AND sec.is_deleted = 0
+                                        WHERE s.is_deleted = 0
+                                        GROUP BY s.student_id, s.student_no, student_name, p.program_name, s.year_level
+                                        HAVING failed_count = 0 AND total_enrollments > 0
+                                        ORDER BY s.student_no ASC";
+
+                                $result = $conn->query($sql);
+
+                                if ($result && $result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<tr class='table-success'>";
+                                        echo "<td><strong>" . htmlspecialchars($row['student_no']) . "</strong></td>";
+                                        echo "<td>" . htmlspecialchars($row['student_name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['program_name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['year_level']) . "</td>";
+                                        echo "<td class='text-center'>{$row['total_enrollments']}</td>";
+                                        echo "<td class='text-center'><span class='badge bg-success'>{$row['passed_count']}</span></td>";
+                                        echo "<td class='text-center'><span class='badge bg-secondary'>{$row['pending_count']}</span></td>";
+                                        echo "<td>
+                                            <a href='?search={$row['student_id']}&tab=all' class='btn btn-info btn-sm'>
+                                                View Enrollments
+                                            </a>
+                                        </td>";
+                                        echo "</tr>";
+                                    }
+                                } else {
+                                    echo "<tr><td colspan='8' class='text-center'>No regular students found</td></tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Irregular Students Tab -->
+                <div class="tab-pane fade" id="irregular-enrollments" role="tabpanel">
+                    <div class="alert alert-warning mb-3">
+                        <strong>Irregular Students:</strong> Students with at least one failed course (D, F, or INC grade)
+                    </div>
+
+                    <div class="table-section">
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th>Student No</th>
+                                    <th>Student Name</th>
+                                    <th>Program</th>
+                                    <th>Year Level</th>
+                                    <th>Total Enrollments</th>
+                                    <th>Passed (A,B,C)</th>
+                                    <th>Failed (D,F,INC)</th>
+                                    <th>Failed Courses</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                // Query to get STUDENTS (not enrollments) who are irregular
+                                $sql = "SELECT
+                                            s.student_id,
+                                            s.student_no,
+                                            CONCAT(s.first_name, ' ', s.last_name) as student_name,
+                                            p.program_name,
+                                            s.year_level,
+                                            COUNT(e.enrollment_id) as total_enrollments,
+                                            COUNT(CASE WHEN e.letter_grade IN ('A', 'B', 'C') THEN 1 END) as passed_count,
+                                            COUNT(CASE WHEN e.letter_grade IN ('D', 'F', 'INC') THEN 1 END) as failed_count,
+                                            GROUP_CONCAT(
+                                                DISTINCT CASE WHEN e.letter_grade IN ('D', 'F', 'INC')
+                                                THEN CONCAT(c.course_code, ' (', e.letter_grade, ')')
+                                                END
+                                                ORDER BY c.course_code
+                                                SEPARATOR ', '
+                                            ) as failed_courses
+                                        FROM tblstudent s
+                                        INNER JOIN tblprogram p ON s.program_id = p.program_id
+                                        INNER JOIN tblenrollment e ON s.student_id = e.student_id
+                                        INNER JOIN tblsection sec ON e.section_id = sec.section_id
+                                        INNER JOIN tblcourse c ON sec.course_id = c.course_id
+                                        WHERE s.is_deleted = 0
+                                        AND e.is_deleted = 0
+                                        GROUP BY s.student_id, s.student_no, student_name, p.program_name, s.year_level
+                                        HAVING failed_count > 0
+                                        ORDER BY failed_count DESC, s.student_no ASC";
+
+                                $result = $conn->query($sql);
+
+                                if ($result && $result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<tr class='table-warning'>";
+                                        echo "<td><strong>" . htmlspecialchars($row['student_no']) . "</strong></td>";
+                                        echo "<td>" . htmlspecialchars($row['student_name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['program_name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['year_level']) . "</td>";
+                                        echo "<td class='text-center'>{$row['total_enrollments']}</td>";
+                                        echo "<td class='text-center'><span class='badge bg-success'>{$row['passed_count']}</span></td>";
+                                        echo "<td class='text-center'><span class='badge bg-danger'>{$row['failed_count']}</span></td>";
+                                        echo "<td><small>" . htmlspecialchars($row['failed_courses']) . "</small></td>";
+                                        echo "<td>
+                                            <a href='?search={$row['student_id']}&tab=all' class='btn btn-primary btn-sm'>
+                                                View Enrollments
+                                            </a>
+                                        </td>";
+                                        echo "</tr>";
+                                    }
+                                } else {
+                                    echo "<tr><td colspan='9' class='text-center text-success'><strong>✓ No irregular students found - All students in good standing!</strong></td></tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="action-bar d-flex justify-content-between align-items-center my-4">
                 <div class="search-section">
                     <form class="search-form d-flex align-items-center" method="GET">
                         <input type="text" name="search" class="form-control me-2" placeholder="Search by student or section ID...">
@@ -71,9 +281,9 @@
                     <button class="btn btn-success mx-2" onclick="window.location.href='export_excel.php'">Export to Excel</button>
                     <button class="btn btn-danger" onclick="window.location.href='export_pdf.php'">Export to PDF</button>
                 </div>
-            </div>
+            </div> -->
 
-            <div class="table-section">
+            <!-- <div class="table-section">
                 <table class="student-table">
                     <thead>
                         <tr>
@@ -90,11 +300,10 @@
                         <?php include 'tblenrollment.php'; ?>
                     </tbody>
                 </table>
-            </div>
+            </div> -->
         </div>
     </div>
 
-    <!-- Enrollment Add Modal -->
     <!-- Enrollment Add Modal -->
     <div class="modal fade" id="enrollmentAddModal" tabindex="-1" aria-labelledby="enrollmentAddModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
