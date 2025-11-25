@@ -71,6 +71,7 @@ try {
     }
 
     // **IMPROVED: Get detailed enrollment status - check for grades**
+    // Check ALL year levels up to the student's current level
     $enrolledTermsStmt = $conn->prepare("
         SELECT DISTINCT
             t.term_id,
@@ -80,7 +81,7 @@ try {
             COUNT(DISTINCT CASE WHEN e.letter_grade IN ('D', 'F', 'INC') THEN e.enrollment_id END) as failed_courses,
             COUNT(DISTINCT CASE WHEN e.letter_grade IS NULL OR e.letter_grade = '' THEN e.enrollment_id END) as pending_grades
         FROM tblterm t
-        LEFT JOIN tblsection s ON t.term_id = s.term_id AND s.year_level = ? AND s.is_deleted = 0
+        LEFT JOIN tblsection s ON t.term_id = s.term_id AND s.year_level <= ? AND s.is_deleted = 0
         LEFT JOIN tblenrollment e ON s.section_id = e.section_id AND e.student_id = ? AND e.is_deleted = 0
         WHERE t.is_deleted = 0
         GROUP BY t.term_id, t.term_code
@@ -185,6 +186,10 @@ try {
         $term_mismatch_message = "You must complete {$allowed_term_code}, but it is not currently active for enrollment.";
     }
 
+    // **KEY CHANGE: Allow students to see courses from their year level OR LOWER**
+    // This allows 3rd year students to take 1st year courses (for failed/missed subjects)
+    $max_year_for_courses = $year_number;
+
     // **IMPROVED: Get courses with better prerequisite checking**
     $sql = "SELECT DISTINCT
                 c.course_id,
@@ -238,13 +243,13 @@ try {
             LEFT JOIN tblenrollment e ON s.section_id = e.section_id AND e.student_id = ? AND e.is_deleted = 0
             WHERE c.is_deleted = 0
             AND s.is_deleted = 0
-            AND s.year_level = ?
+            AND s.year_level <= ?
             AND s.term_id = ?
             AND e.enrollment_id IS NULL
-            ORDER BY c.course_code ASC, s.section_code ASC";
+            ORDER BY s.year_level ASC, c.course_code ASC, s.section_code ASC";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iiiii", $student_id, $student_id, $student_id, $year_number, $allowed_term_id);
+    $stmt->bind_param("iiiii", $student_id, $student_id, $student_id, $max_year_for_courses, $allowed_term_id);
     $stmt->execute();
     $result = $stmt->get_result();
 

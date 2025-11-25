@@ -306,100 +306,98 @@
 
     <!-- Enrollment Add Modal -->
     <div class="modal fade" id="enrollmentAddModal" tabindex="-1" aria-labelledby="enrollmentAddModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Enroll Student in Course</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Student Selection -->
-                    <div class="row mb-3">
-                        <div class="col">
-                            <label class="form-label">Student</label>
-                            <select name="student_id" id="student_select" class="form-select" required>
-                                <option value="">Select Student</option>
-                                <?php
-                                $studentQuery = $conn->query("SELECT student_id, student_no, CONCAT(last_name, ', ', first_name) as full_name FROM tblstudent WHERE is_deleted = 0 ORDER BY last_name ASC");
-                                while($student = $studentQuery->fetch_assoc()) {
-                                    echo "<option value='{$student['student_id']}'>{$student['student_no']} - {$student['full_name']}</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Available Courses Section (loaded dynamically) -->
-                    <div id="available_courses_section" style="display:none;">
-                        <div id="available_courses_list">
-                            <!-- Courses with checkboxes, term progress, and "Enroll in Selected Courses" button will be loaded here via AJAX -->
-                        </div>
-                    </div>
-                </div>
-                <!-- NO FOOTER - Everything is handled inside available_courses_list -->
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Enroll Student in Course</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Student Selection -->
+            <div class="row mb-3">
+              <div class="col">
+                <label class="form-label">Student</label>
+                <select name="student_id" id="student_select" class="form-select" required>
+                  <option value="">Select Student</option>
+                  <?php
+                  $studentQuery = $conn->query("SELECT student_id, student_no, CONCAT(last_name, ', ', first_name) as full_name FROM tblstudent WHERE is_deleted = 0 ORDER BY last_name ASC");
+                  while($student = $studentQuery->fetch_assoc()) {
+                      echo "<option value='{$student['student_id']}'>{$student['student_no']} - {$student['full_name']}</option>";
+                  }
+                  ?>
+                </select>
+              </div>
             </div>
+
+            <!-- Available Courses Section (loaded dynamically) -->
+            <div id="available_courses_section" style="display:none;">
+              <div id="available_courses_list">
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
     <!-- Edit Enrollment Modal -->
     <div class="modal fade" id="enrollmentEditModal" tabindex="-1" aria-labelledby="enrollmentEditModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="enrollmentEditModalLabel">Edit Enrollment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="enrollmentEditModalLabel">Edit Enrollment</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="enrollmentEditForm">
+            <div class="modal-body">
+              <input type="hidden" id="edit_enrollment_id" name="enrollment_id">
+
+              <div class="mb-3">
+                <label class="form-label">Student</label>
+                <input type="text" id="edit_student_name" class="form-control" disabled>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Course - Section</label>
+                <input type="text" id="edit_course_info" class="form-control" disabled>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Date Enrolled</label>
+                <input type="date" id="edit_date_enrolled" name="date_enrolled" class="form-control" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select id="edit_status" name="status" class="form-select" required>
+                  <option value="Regular">Regular</option>
+                  <option value="Irregular">Irregular</option>
+                  <option value="Dropped">Dropped</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label"><strong>Letter Grade</strong> (Leave empty if not yet graded)</label>
+                <select id="edit_letter_grade" name="letter_grade" class="form-select">
+                  <option value="">Not yet graded</option>
+                  <option value="A">A (Excellent - Passed)</option>
+                  <option value="B">B (Very Good - Passed)</option>
+                  <option value="C">C (Good - Passed)</option>
+                  <option value="D">D (Fair - Failed)</option>
+                  <option value="F">F (Failed)</option>
+                  <option value="INC">INC (Incomplete)</option>
+                  <option value="W">W (Withdrawn)</option>
+                </select>
+                <div class="form-text">
+                  Note: Only A, B, C grades count as passing for prerequisites
                 </div>
-                <form id="enrollmentEditForm">
-                    <div class="modal-body">
-                        <input type="hidden" id="edit_enrollment_id" name="enrollment_id">
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Student</label>
-                            <input type="text" id="edit_student_name" class="form-control" disabled>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Course - Section</label>
-                            <input type="text" id="edit_course_info" class="form-control" disabled>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Date Enrolled</label>
-                            <input type="date" id="edit_date_enrolled" name="date_enrolled" class="form-control" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <select id="edit_status" name="status" class="form-select" required>
-                                <option value="Regular">Regular</option>
-                                <option value="Irregular">Irregular</option>
-                                <option value="Dropped">Dropped</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label"><strong>Letter Grade</strong> (Leave empty if not yet graded)</label>
-                            <select id="edit_letter_grade" name="letter_grade" class="form-select">
-                                <option value="">Not yet graded</option>
-                                <option value="A">A (Excellent - Passed)</option>
-                                <option value="B">B (Very Good - Passed)</option>
-                                <option value="C">C (Good - Passed)</option>
-                                <option value="D">D (Fair - Failed)</option>
-                                <option value="F">F (Failed)</option>
-                                <option value="INC">INC (Incomplete)</option>
-                                <option value="W">W (Withdrawn)</option>
-                            </select>
-                            <div class="form-text">
-                                Note: Only A, B, C grades count as passing for prerequisites
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Update Enrollment</button>
-                    </div>
-                </form>
+              </div>
             </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update Enrollment</button>
+            </div>
+          </form>
         </div>
+      </div>
     </div>
 
     <script src="../../../dbenrollment_app/assets/js/enrollment.js"></script>
