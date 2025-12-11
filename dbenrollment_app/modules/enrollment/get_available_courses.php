@@ -36,7 +36,7 @@ try {
         $year_number = 1;
     }
 
-    // Get all active terms (allow multiple terms to be open)
+    // Get all active terms
     $activeTermsStmt = $conn->prepare("SELECT term_id, term_code FROM tblterm WHERE is_active = 1 AND is_deleted = 0 ORDER BY start_date ASC");
     $activeTermsStmt->execute();
     $activeTermsResult = $activeTermsStmt->get_result();
@@ -70,8 +70,7 @@ try {
         $all_terms[] = $term_row;
     }
 
-    // **IMPROVED: Get detailed enrollment status - check for grades**
-    // Check ALL year levels up to the student's current level
+    // Get detailed enrollment status
     $enrolledTermsStmt = $conn->prepare("
         SELECT DISTINCT
             t.term_id,
@@ -81,19 +80,19 @@ try {
             COUNT(DISTINCT CASE WHEN e.letter_grade IN ('D', 'F', 'INC') THEN e.enrollment_id END) as failed_courses,
             COUNT(DISTINCT CASE WHEN e.letter_grade IS NULL OR e.letter_grade = '' THEN e.enrollment_id END) as pending_grades
         FROM tblterm t
-        LEFT JOIN tblsection s ON t.term_id = s.term_id AND s.year_level <= ? AND s.is_deleted = 0
+        LEFT JOIN tblsection s ON t.term_id = s.term_id AND s.is_deleted = 0
         LEFT JOIN tblenrollment e ON s.section_id = e.section_id AND e.student_id = ? AND e.is_deleted = 0
         WHERE t.is_deleted = 0
         GROUP BY t.term_id, t.term_code
         ORDER BY t.start_date ASC
     ");
-    $enrolledTermsStmt->bind_param("ii", $year_number, $student_id);
+    $enrolledTermsStmt->bind_param("i", $student_id);
     $enrolledTermsStmt->execute();
     $enrolledTermsResult = $enrolledTermsStmt->get_result();
 
     $term_progress = [];
-    $completed_term_ids = []; // Only terms with ALL grades submitted
-    $enrolled_term_ids = []; // Terms with any enrollments
+    $completed_term_ids = [];
+    $enrolled_term_ids = [];
 
     while ($enrolled_term = $enrolledTermsResult->fetch_assoc()) {
         $has_enrollments = $enrolled_term['enrolled_courses'] > 0;
@@ -119,7 +118,7 @@ try {
         }
     }
 
-    // Determine student status: Regular or Irregular
+    // Determine student status
     $is_irregular = false;
     $irregular_reason = "";
 
@@ -129,34 +128,32 @@ try {
             $irregular_reason = "Has failed courses in " . $term['term_code'];
             break;
         }
-        if ($term['is_enrolled'] && $term['pending_grades'] > 0 && in_array($term['term_id'], $active_term_ids)) {
-            // Student has pending grades in previously enrolled terms
-            $irregular_reason = "Pending grades in " . $term['term_code'];
-        }
     }
 
-    // Determine the NEXT term the student should enroll in
+    // Determine allowed term
     $allowed_term_id = null;
     $allowed_term_code = null;
 
-    // Regular students: must complete terms sequentially
-    if (!$is_irregular) {
-        foreach ($all_terms as $term) {
-            if (!in_array($term['term_id'], $completed_term_ids)) {
-                $allowed_term_id = $term['term_id'];
-                $allowed_term_code = $term['term_code'];
-                break;
+    if (!empty($active_term_ids)) {
+        $preferred_term_found = false;
+
+        if (!$is_irregular) {
+            foreach ($all_terms as $term) {
+                if (!in_array($term['term_id'], $completed_term_ids) && in_array($term['term_id'], $active_term_ids)) {
+                    $allowed_term_id = $term['term_id'];
+                    $allowed_term_code = $term['term_code'];
+                    $preferred_term_found = true;
+                    break;
+                }
             }
         }
-    } else {
-        // Irregular students: can enroll in any active term (to retake failed courses)
-        if (!empty($active_term_ids)) {
-            $allowed_term_id = $active_term_ids[0]; // Allow first active term
+
+        if (!$preferred_term_found) {
+            $allowed_term_id = $active_term_ids[0];
             $allowed_term_code = $active_terms[0]['term_code'];
         }
     }
 
-    // If student has completed all terms
     if ($allowed_term_id === null && !$is_irregular) {
         echo json_encode([
             "success" => true,
@@ -178,19 +175,21 @@ try {
         exit;
     }
 
-    // Check if allowed term is active
-    $term_mismatch = !in_array($allowed_term_id, $active_term_ids);
+    $term_mismatch = false;
     $term_mismatch_message = "";
 
-    if ($term_mismatch && !$is_irregular) {
-        $term_mismatch_message = "You must complete {$allowed_term_code}, but it is not currently active for enrollment.";
-    }
-
-    // **KEY CHANGE: Allow students to see courses from their year level OR LOWER**
-    // This allows 3rd year students to take 1st year courses (for failed/missed subjects)
+    // **KEY FIX: Allow next year courses during Summer**
     $max_year_for_courses = $year_number;
 
-    // **IMPROVED: Get courses with better prerequisite checking**
+    // Check if enrolling in a Summer term
+    $is_summer_term = stripos($allowed_term_code, 'Summer') !== false || stripos($allowed_term_code, 'Midyear') !== false;
+
+    // If Summer/Midyear term, allow courses from next year level
+    if ($is_summer_term) {
+        $max_year_for_courses = $year_number + 1;
+    }
+
+    // Get courses
     $sql = "SELECT DISTINCT
                 c.course_id,
                 c.course_code,
@@ -289,7 +288,9 @@ try {
         "term_mismatch" => $term_mismatch,
         "term_mismatch_message" => $term_mismatch_message,
         "term_progress" => $term_progress,
-        "active_terms" => $active_terms
+        "active_terms" => $active_terms,
+        "is_summer" => $is_summer_term,
+        "max_year_allowed" => $max_year_for_courses
     ]);
 
     $stmt->close();
