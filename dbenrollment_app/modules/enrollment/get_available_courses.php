@@ -9,7 +9,7 @@ try {
 
     $student_id = intval($_GET['student_id']);
 
-    // Get student info test
+    // Get student info
     $studentStmt = $conn->prepare("SELECT program_id, year_level FROM tblstudent WHERE student_id = ? AND is_deleted = 0");
     $studentStmt->bind_param("i", $student_id);
     $studentStmt->execute();
