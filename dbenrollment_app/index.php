@@ -57,12 +57,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['full_name'] = $user['full_name'];
                 
                 // Redirect based on role
-                if ($user['role'] === 'admin') {
+                if ($user['role'] === 'student') {
+                    $_SESSION['student_id'] = $user['reference_id'];
+                    header("Location: modules/student_portal/dashboard.php");
+                } elseif ($user['role'] === 'admin') {
                     header("Location: modules/student/index.php");
                 } elseif ($user['role'] === 'faculty') {
                     header("Location: modules/faculty/dashboard.php");
-                } elseif ($user['role'] === 'student') {
-                    header("Location: modules/student_portal/dashboard.php");
                 }
                 exit();
             } else {
@@ -85,12 +86,7 @@ $conn->close();
     <title>Login - DBA Enrollment System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #7B1113 0%, #1E1E1E 100%);
@@ -100,7 +96,6 @@ $conn->close();
             justify-content: center;
             padding: 20px;
         }
-
         .login-container {
             background: white;
             border-radius: 20px;
@@ -111,7 +106,6 @@ $conn->close();
             display: grid;
             grid-template-columns: 1fr 1fr;
         }
-
         .login-left {
             background: linear-gradient(135deg, #7B1113 0%, #9C1E1F 100%);
             color: white;
@@ -120,65 +114,22 @@ $conn->close();
             flex-direction: column;
             justify-content: center;
         }
-
-        .login-left h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: #FFCC00;
-        }
-
-        .login-left p {
-            font-size: 1rem;
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-
-        .login-right {
-            padding: 60px 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .login-right h2 {
-            font-size: 1.8rem;
-            color: #7B1113;
-            margin-bottom: 10px;
-        }
-
-        .login-right p {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
+        .login-left h1 { font-size: 2rem; margin-bottom: 20px; color: #FFCC00; }
+        .login-left p { font-size: 1rem; line-height: 1.6; opacity: 0.9; }
+        .login-right { padding: 60px 40px; display: flex; flex-direction: column; justify-content: center; }
+        .login-right h2 { font-size: 1.8rem; color: #7B1113; margin-bottom: 10px; }
+        .login-right p { color: #666; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; color: #333; margin-bottom: 8px; font-size: 0.9rem; }
         .form-group input {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 0.95rem;
-            font-family: 'Poppins', sans-serif;
             transition: all 0.3s ease;
         }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #7B1113;
-            box-shadow: 0 0 0 3px rgba(123, 17, 19, 0.1);
-        }
-
+        .form-group input:focus { outline: none; border-color: #7B1113; box-shadow: 0 0 0 3px rgba(123, 17, 19, 0.1); }
         .alert {
             padding: 12px 16px;
             background: #fee2e2;
@@ -188,7 +139,6 @@ $conn->close();
             font-size: 0.9rem;
             border-left: 4px solid #ef4444;
         }
-
         .login-btn {
             width: 100%;
             padding: 14px;
@@ -202,46 +152,10 @@ $conn->close();
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(123, 17, 19, 0.3);
         }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(123, 17, 19, 0.4);
-        }
-
-        .roles-info {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .roles-info h4 {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            background: #f0f0f0;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(123, 17, 19, 0.4); }
         @media (max-width: 768px) {
-            .login-container {
-                grid-template-columns: 1fr;
-            }
-
-            .login-left {
-                padding: 40px 30px;
-            }
-
-            .login-right {
-                padding: 40px 30px;
-            }
+            .login-container { grid-template-columns: 1fr; }
+            .login-left, .login-right { padding: 40px 30px; }
         }
     </style>
 </head>
@@ -250,7 +164,6 @@ $conn->close();
         <div class="login-left">
             <h1>DBA Enrollment Management System</h1>
             <p>Welcome to the official enrollment portal. Sign in with your credentials to access your dashboard.</p>
-            
             <div style="margin-top: 40px;">
                 <h4 style="color: #FFCC00; margin-bottom: 15px;">Access Levels:</h4>
                 <p style="font-size: 0.9rem; margin-bottom: 10px;">👤 <strong>Students:</strong> Enroll in courses and view grades</p>
@@ -264,42 +177,21 @@ $conn->close();
             <p>Enter your credentials to continue</p>
 
             <?php if (!empty($error)): ?>
-                <div class="alert">
-                    ✗ <?= htmlspecialchars($error) ?>
-                </div>
+                <div class="alert">✗ <?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
             <form method="POST" action="">
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input 
-                        type="text" 
-                        id="username" 
-                        name="username" 
-                        placeholder="Enter your username"
-                        required
-                        autofocus
-                    >
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
                 </div>
-
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        placeholder="Enter your password"
-                        required
-                    >
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
                 </div>
-
-                <button type="submit" class="login-btn">
-                    Sign In
-                </button>
+                <button type="submit" class="login-btn">Sign In</button>
             </form>
-
-            <div class="roles-info">
-                <h4>Don't have an account?</h4>
+            <div class="roles-info" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
                 <p style="font-size: 0.85rem; color: #666;">Contact your administrator for account creation.</p>
             </div>
         </div>
