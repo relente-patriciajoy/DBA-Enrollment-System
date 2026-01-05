@@ -173,20 +173,7 @@ $logs_query = $conn->query("
 </head>
 <body>
     <?php include('../../templates/sidebar.php'); ?>
-
-    <!-- Top Bar -->
-    <div class="topbar">
-        <div class="topbar-left">
-            <h2>DBA Enrollment System</h2>
-        </div>
-        <div class="topbar-center">
-            Database Backup & Restore
-        </div>
-        <div class="topbar-right">
-            <span class="user-role">Administrator</span>
-            <a href="../../logout.php" class="logout-btn">Logout</a>
-        </div>
-    </div>
+    <?php include('../../templates/header.php'); ?>
 
     <main class="main">
         <h1>Database Backup & Restore</h1>
