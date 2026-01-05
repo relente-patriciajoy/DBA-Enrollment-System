@@ -112,7 +112,7 @@ $(document).ready(function () {
     if (!confirm('Are you sure you want to delete this department?')) return;
 
     $.ajax({
-      url: 'delete_ajax.php',
+      url: 'delete.php',
       method: 'POST',
       data: { dept_id: id },
       dataType: 'json'
@@ -123,7 +123,7 @@ $(document).ready(function () {
         $(`.delete-department[data-id='${id}']`).closest('tr').fadeOut();
       } else {
         alert(resp.error || 'Failed to delete department');
-        console.error('delete_ajax.php resp', resp);
+        console.error('delete.php resp', resp);
       }
     }).fail(function (xhr, status, err) {
       alert('Server error deleting department — see console.');
