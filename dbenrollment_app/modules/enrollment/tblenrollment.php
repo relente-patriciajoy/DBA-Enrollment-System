@@ -51,11 +51,13 @@ if ($result && $result->num_rows > 0) {
         echo "<td><span class='badge $statusBadge'>" . htmlspecialchars($row['status']) . "</span></td>";
         echo "<td>" . ($row['letter_grade'] ? htmlspecialchars($row['letter_grade']) : '<span class="text-muted">N/A</span>') . "</td>";
 
-        // ACTION BUTTONS - These must match your index.php jQuery selectors
+        // ACTION BUTTONS
         echo "<td>
                 <div class='btn-group' role='group'>
                     <button type='button'
                             class='btn btn-sm btn-outline-primary btn-edit-enrollment'
+                            data-bs-toggle='modal'
+                            data-bs-target='#enrollmentEditModal'
                             data-enrollment-id='{$row['enrollment_id']}'
                             title='Edit Enrollment'>
                         Edit
@@ -67,7 +69,7 @@ if ($result && $result->num_rows > 0) {
                         Delete
                     </button>
                 </div>
-              </td>";
+            </td>";
         echo "</tr>";
     }
 } else {

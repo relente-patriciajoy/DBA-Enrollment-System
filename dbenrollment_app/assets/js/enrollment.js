@@ -270,3 +270,53 @@ $('#enrollmentAddModal').on('hidden.bs.modal', function () {
   $('#available_courses_section').hide();
   $('#available_courses_list').html('');
 });
+
+// EDIT ENROLLMENT LISTENER (Fetches data to fill the modal)
+$(document).on('click', '.btn-edit-enrollment', function () {
+  const enrollmentId = $(this).data('enrollment-id'); // Gets ID from the button you just shared
+
+  $.ajax({
+    url: 'get_enrollment.php',
+    type: 'GET',
+    data: { enrollment_id: enrollmentId },
+    dataType: 'json',
+    success: function (response) {
+      if (response.success) {
+        // This fills the empty inputs in your screenshot
+        $('#edit_enrollment_id').val(response.enrollment.enrollment_id);
+        $('#edit_student_name').val(response.enrollment.student_name);
+        $('#edit_course_info').val(response.enrollment.course_code);
+        $('#edit_date_enrolled').val(response.enrollment.date_enrolled);
+        $('#edit_status').val(response.enrollment.status);
+        $('#edit_letter_grade').val(response.enrollment.letter_grade);
+      }
+    }
+  });
+});
+
+// UPDATE SUBMIT LISTENER (Sends changes to the database)
+$(document).on('click', '#btn_update_enrollment', function (e) {
+  e.preventDefault(); // STOPS the URL refresh/redirect
+
+  const formData = {
+    enrollment_id: $('#edit_enrollment_id').val(),
+    date_enrolled: $('#edit_date_enrolled').val(),
+    status: $('#edit_status').val(),
+    letter_grade: $('#edit_letter_grade').val()
+  };
+
+  $.ajax({
+    url: 'update_enrollment.php',
+    type: 'POST',
+    data: formData,
+    dataType: 'json',
+    success: function (response) {
+      if (response.success) {
+        alert("Enrollment updated!");
+        location.reload(); // Refreshes the table to show changes
+      } else {
+        alert("Error: " + response.error);
+      }
+    }
+  });
+});

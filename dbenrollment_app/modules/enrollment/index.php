@@ -402,8 +402,8 @@ include_once '../../config/database.php';
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Update Enrollment</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn_update_enrollment">Update Enrollment</button>
             </div>
           </form>
         </div>
@@ -413,171 +413,14 @@ include_once '../../config/database.php';
     <script src="../../../dbenrollment_app/assets/js/enrollment.js"></script>
     <script>
         $(document).ready(function() {
-        console.log('Page loaded - enrollment management ready');
+            console.log('Index ready. Handlers loaded from enrollment.js');
 
-        // Edit Enrollment Button Click
-        $(document).on('click', '.btn-edit-enrollment', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const enrollmentId = $(this).data('enrollment-id');
-            console.log('Edit button clicked for enrollment:', enrollmentId);
-
-            if (!enrollmentId) {
-                alert('Invalid enrollment ID');
-                return;
-            }
-
-            // Fetch enrollment details
-            $.ajax({
-                url: 'get_enrollment.php',
-                type: 'GET',
-                data: { enrollment_id: enrollmentId },
-                dataType: 'json',
-                success: function(response) {
-                    console.log('AJAX Response:', response);
-
-                    if (response.success && response.enrollment) {
-                        const enrollment = response.enrollment;
-
-                        // Populate edit modal fields
-                        $('#edit_enrollment_id').val(enrollment.enrollment_id);
-                        $('#edit_student_name').val(enrollment.student_name);
-                        $('#edit_course_info').val(enrollment.course_code + ' - ' + enrollment.section_code);
-                        $('#edit_date_enrolled').val(enrollment.date_enrolled);
-                        $('#edit_status').val(enrollment.status);
-
-                        // Handle letter grade (could be null or empty)
-                        if (enrollment.letter_grade) {
-                            $('#edit_letter_grade').val(enrollment.letter_grade);
-                        } else {
-                            $('#edit_letter_grade').val('');
-                        }
-
-                        console.log('Modal fields populated, showing modal...');
-
-                        // Show the modal using Bootstrap 5 API
-                        const modalElement = document.getElementById('enrollmentEditModal');
-                        const modal = new bootstrap.Modal(modalElement, {
-                            backdrop: 'static',
-                            keyboard: false
-                        });
-                        modal.show();
-
-                        console.log('Modal should be visible now');
-                    } else {
-                        alert('Error: ' + (response.error || 'Failed to load enrollment data'));
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', {
-                        status: status,
-                        error: error,
-                        responseText: xhr.responseText
-                    });
-                    alert('Failed to load enrollment details. Check console for details.');
-                }
+            // Cleanup stray backdrops on modal close
+            $('.modal').on('hidden.bs.modal', function () {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css('padding-right', '');
             });
         });
-
-        // Delete Enrollment Button Click
-        $(document).on('click', '.btn-delete-enrollment', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const enrollmentId = $(this).data('enrollment-id');
-            console.log('Delete button clicked for enrollment:', enrollmentId);
-
-            if (!enrollmentId) {
-                alert('Invalid enrollment ID');
-                return;
-            }
-
-            if (!confirm('Are you sure you want to delete this enrollment? This action cannot be undone.')) {
-                return;
-            }
-
-            $.ajax({
-                url: 'delete.php',
-                type: 'POST',
-                data: { enrollment_id: enrollmentId },
-                dataType: 'json',
-                success: function(response) {
-                    console.log('Delete response:', response);
-
-                    if (response.success) {
-                        alert('Enrollment deleted successfully!');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + (response.error || 'Failed to delete enrollment'));
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Delete Error:', {
-                        status: status,
-                        error: error,
-                        responseText: xhr.responseText
-                    });
-                    alert('Failed to delete enrollment. Check console for details.');
-                }
-            });
-        });
-
-        // Handle Edit Form Submission
-        $('#enrollmentEditForm').on('submit', function(e) {
-            e.preventDefault();
-
-            const formData = $(this).serialize();
-            console.log('Submitting update with data:', formData);
-
-            $.ajax({
-                url: 'update_enrollment.php',
-                method: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: function(response) {
-                    console.log('Update response:', response);
-
-                    if (response.success) {
-                        // Hide modal using Bootstrap 5 API
-                        const modalElement = document.getElementById('enrollmentEditModal');
-                        const modal = bootstrap.Modal.getInstance(modalElement);
-                        if (modal) {
-                            modal.hide();
-                        }
-
-                        alert('Enrollment updated successfully!');
-
-                        // Reload page after a short delay
-                        setTimeout(function() {
-                            location.reload();
-                        }, 500);
-                    } else {
-                        alert('Error: ' + (response.error || 'Failed to update enrollment'));
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Update Error:', {
-                        status: status,
-                        error: error,
-                        responseText: xhr.responseText
-                    });
-                    alert('Error updating enrollment. Check console for details.');
-                }
-            });
-        });
-
-        // Clean up modal backdrop when hidden
-        document.getElementById('enrollmentEditModal').addEventListener('hidden.bs.modal', function () {
-            // Remove any stray backdrops
-            document.querySelectorAll('.modal-backdrop').forEach(function(backdrop) {
-                backdrop.remove();
-            });
-            // Reset body
-            document.body.classList.remove('modal-open');
-            document.body.style.removeProperty('padding-right');
-        });
-    });
     </script>
 </body>
 </html>
