@@ -1,5 +1,11 @@
 <?php
+session_start();
 header('Content-Type: application/json');
+
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRoleAjax('admin');
+
 include_once '../../config/database.php';
 
 try {
@@ -49,7 +55,7 @@ try {
     $conn->close();  // Add this
     exit;
 } catch (Exception $e) {
-    error_log("program/update_ajax.php error: " . $e->getMessage());
+    error_log("program/update.php error: " . $e->getMessage());
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     exit;
 }

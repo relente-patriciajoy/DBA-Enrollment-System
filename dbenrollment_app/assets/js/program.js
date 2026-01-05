@@ -5,7 +5,7 @@ $(function () {
   $('#addProgramForm').on('submit', function (e) {
     e.preventDefault();
     $.ajax({
-      url: 'add_ajax.php',
+      url: 'add.php',
       method: 'POST',
       data: $(this).serialize(),
       dataType: 'json'
@@ -28,7 +28,7 @@ $(function () {
         $('table tbody').prepend(newRow);
       } else {
         alert(resp.error || 'Failed to add program');
-        console.error('add_ajax.php response', resp);
+        console.error('add.php response', resp);
       }
     }).fail(function (xhr, status, err) {
       alert('Server error adding program — see console.');
@@ -74,7 +74,7 @@ $(function () {
   $('#editProgramForm').on('submit', function (e) {
     e.preventDefault();
     $.ajax({
-      url: 'update_ajax.php',
+      url: 'update.php',
       method: 'POST',
       data: $(this).serialize(),
       dataType: 'json'
@@ -104,7 +104,7 @@ $(function () {
         setTimeout(() => $nr.removeClass('new-row fade-out'), 2500);
       } else {
         alert(resp.error || 'Failed to update program');
-        console.error('update_ajax.php resp', resp);
+        console.error('update.php resp', resp);
       }
     }).fail(function (xhr, status, err) {
       alert('Server error updating program — see console.');
@@ -119,7 +119,7 @@ $(function () {
     if (!confirm('Are you sure you want to delete this program?')) return;
 
     $.ajax({
-      url: 'delete_ajax.php',
+      url: 'delete.php',
       method: 'POST',
       data: { program_id: id },
       dataType: 'json'
@@ -128,7 +128,7 @@ $(function () {
         $(`.delete-program[data-id='${id}']`).closest('tr').fadeOut();
       } else {
         alert(resp.error || 'Failed to delete program');
-        console.error('delete_ajax.php resp', resp);
+        console.error('delete.php resp', resp);
       }
     }).fail(function (xhr, status, err) {
       alert('Server error deleting program — see console.');

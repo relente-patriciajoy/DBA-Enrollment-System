@@ -1,4 +1,14 @@
 <?php
+// Prevent "Notice: session_start(): Ignoring session_start()"
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Use include_once to prevent "Fatal error: Cannot redeclare requireRole()"
+include_once('../includes/auth_check.php');
+include_once('../includes/role_check.php');
+requireRole('admin');
+
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 
 $where = "p.is_deleted = 0";
