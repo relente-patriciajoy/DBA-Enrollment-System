@@ -62,7 +62,7 @@ $(document).ready(function () {
   window.deleteTerm = function (termId) {
     if (confirm('Are you sure you want to delete this term?')) {
       $.ajax({
-        url: 'delete_ajax.php',
+        url: 'delete.php',
         type: 'POST',
         data: { term_id: termId },
         dataType: 'json',
