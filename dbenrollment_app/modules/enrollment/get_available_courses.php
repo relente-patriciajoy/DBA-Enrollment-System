@@ -1,5 +1,14 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json');
+
+include_once('../includes/auth_check.php');
+include_once('../includes/role_check.php');
+
+requireRoleAjax('admin');
+
 include_once '../../config/database.php';
 
 try {

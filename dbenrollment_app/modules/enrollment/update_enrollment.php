@@ -1,6 +1,21 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json');
-include_once '../../config/database.php';
+
+// 1. Database first (so $conn is available for security checks if needed)
+require_once '../../config/database.php';
+
+// 2. Security checks
+include_once '../includes/auth_check.php';
+include_once '../includes/role_check.php';
+
+// 3. Manual role check (This is good, it keeps it simple!)
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
 
 try {
     if (empty($_POST['enrollment_id'])) {
@@ -17,7 +32,7 @@ try {
                            SET date_enrolled = ?, status = ?, letter_grade = ?
                            WHERE enrollment_id = ? AND is_deleted = 0");
     $stmt->bind_param("sssi", $date_enrolled, $status, $letter_grade, $enrollment_id);
-    
+
     if ($stmt->execute()) {
         echo json_encode([
             "success" => true,

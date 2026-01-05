@@ -1,5 +1,17 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 header('Content-Type: application/json');
+
+// Use your actual file names
+include_once('../includes/auth_check.php');
+include_once('../includes/role_check.php');
+
+// Ensure requireRole exists in your role_check.php
+requireRole('admin');
+
 include_once '../../config/database.php';
 
 try {
@@ -9,23 +21,14 @@ try {
 
     $enrollment_id = intval($_GET['enrollment_id']);
     
-    $sql = "SELECT
-                e.enrollment_id,
-                e.student_id,
-                e.section_id,
-                DATE_FORMAT(e.date_enrolled, '%Y-%m-%d') as date_enrolled,
-                e.status,
-                e.letter_grade,
-                CONCAT(s.first_name, ' ', s.last_name) as student_name,
-                c.course_code,
-                sec.section_code,
-                c.course_title
+    $sql = "SELECT e.*,
+            CONCAT(s.first_name, ' ', s.last_name) as student_name,
+            c.course_code, sec.section_code
             FROM tblenrollment e
             INNER JOIN tblstudent s ON e.student_id = s.student_id
             INNER JOIN tblsection sec ON e.section_id = sec.section_id
             INNER JOIN tblcourse c ON sec.course_id = c.course_id
-            WHERE e.enrollment_id = ?
-            AND e.is_deleted = 0";
+            WHERE e.enrollment_id = ? AND e.is_deleted = 0";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $enrollment_id);
@@ -36,21 +39,9 @@ try {
         throw new Exception("Enrollment not found");
     }
 
-    $enrollment = $result->fetch_assoc();
-
-    echo json_encode([
-        "success" => true,
-        "enrollment" => $enrollment
-    ]);
-
-    $stmt->close();
-    $conn->close();
+    echo json_encode(["success" => true, "enrollment" => $result->fetch_assoc()]);
 
 } catch (Exception $e) {
-    error_log("Error in get_enrollment.php: " . $e->getMessage());
-    echo json_encode([
-        "success" => false,
-        "error" => $e->getMessage()
-    ]);
+    echo json_encode(["success" => false, "error" => $e->getMessage()]);
 }
 ?>

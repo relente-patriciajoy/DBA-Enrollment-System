@@ -1,32 +1,38 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json');
+
+include_once('../includes/auth_check.php');
+include_once('../includes/role_check.php');
+
+requireRoleAjax('admin');
+
 include_once '../../config/database.php';
 
 try {
-    if (empty($_POST['student_id']) || empty($_POST['section_id']) || empty($_POST['date_enrolled']) || empty($_POST['status'])) {
-        throw new Exception("Student ID, Section ID, Date Enrolled, and Status are required");
+    // Basic validation
+    if (empty($_POST['student_id']) || empty($_POST['section_id']) || empty($_POST['date_enrolled'])) {
+        throw new Exception("Student, Section, and Date are required fields.");
     }
 
     $student_id = intval($_POST['student_id']);
     $section_id = intval($_POST['section_id']);
     $date_enrolled = $_POST['date_enrolled'];
-    $status = trim($_POST['status']);
-    $letter_grade = isset($_POST['letter_grade']) ? trim($_POST['letter_grade']) : NULL;
+    $status = trim($_POST['status'] ?? 'Regular'); // Default to Regular if empty
+    $letter_grade = !empty($_POST['letter_grade']) ? trim($_POST['letter_grade']) : NULL;
 
-    // **NEW: Check if student is already enrolled in this section**
+    // Check if student is already enrolled in this section
     $checkStmt = $conn->prepare("
         SELECT enrollment_id
         FROM tblenrollment
-        WHERE student_id = ?
-        AND section_id = ?
-        AND is_deleted = 0
+        WHERE student_id = ? AND section_id = ? AND is_deleted = 0
     ");
     $checkStmt->bind_param("ii", $student_id, $section_id);
     $checkStmt->execute();
-    $checkResult = $checkStmt->get_result();
-
-    if ($checkResult->num_rows > 0) {
-        throw new Exception("Student is already enrolled in this section");
+    if ($checkStmt->get_result()->num_rows > 0) {
+        throw new Exception("Student is already enrolled in this section.");
     }
     $checkStmt->close();
 
@@ -37,17 +43,16 @@ try {
     if ($stmt->execute()) {
         echo json_encode([
             "success" => true,
-            "message" => "Enrollment added successfully",
-            "enrollment_id" => $conn->insert_id
+            "message" => "Enrollment added successfully"
         ]);
     } else {
-        throw new Exception("Failed to add enrollment: " . $stmt->error);
+        throw new Exception("Database error: " . $stmt->error);
     }
 
     $stmt->close();
     $conn->close();
+
 } catch (Exception $e) {
-    error_log("Error in add_enrollment.php: " . $e->getMessage());
     echo json_encode([
         "success" => false,
         "error" => $e->getMessage()

@@ -1,5 +1,11 @@
 <?php
+session_start();
 header('Content-Type: application/json');
+
+include('../includes/auth_check_ajax.php');
+include('../includes/role_check_ajax.php');
+requireRoleAjax('admin');
+
 include_once '../../config/database.php';
 
 if (!isset($_POST['enrollment_id'])) {
