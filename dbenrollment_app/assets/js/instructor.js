@@ -2,7 +2,7 @@ $(document).ready(function () {
   $('#instructorAddForm').on('submit', function (e) {
     e.preventDefault();
     $.ajax({
-      url: 'add_ajax.php',
+      url: 'add.php',
       type: 'POST',
       data: $(this).serialize(),
       dataType: 'json',
@@ -44,7 +44,7 @@ $(document).ready(function () {
   $('#instructorEditForm').on('submit', function (e) {
     e.preventDefault();
     $.ajax({
-      url: 'update_ajax.php',
+      url: 'update.php',
       type: 'POST',
       data: $(this).serialize(),
       dataType: 'json',
@@ -94,7 +94,7 @@ function editInstructor(id) {
 function deleteInstructor(id) {
   if (confirm('Are you sure you want to delete this instructor?')) {
     $.ajax({
-      url: 'delete_ajax.php',
+      url: 'delete.php',
       type: 'POST',
       data: { id: id },
       success: function (response) {

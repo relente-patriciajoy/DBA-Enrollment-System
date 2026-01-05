@@ -1,5 +1,11 @@
 <?php
+session_start();
 header('Content-Type: application/json');
+
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRoleAjax('admin');
+
 include_once '../../config/database.php';
 
 try {
@@ -7,11 +13,11 @@ try {
         throw new Exception("Invalid instructor ID.");
     }
 
-    $stmt = $conn->prepare("UPDATE tblinstructor 
+    $stmt = $conn->prepare("UPDATE tblinstructor
                            SET last_name=?, first_name=?, email=?, dept_id=?
                            WHERE instructor_id=?");
 
-    $stmt->bind_param("sssii", 
+    $stmt->bind_param("sssii",
         $_POST['last_name'],
         $_POST['first_name'],
         $_POST['email'],

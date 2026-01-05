@@ -1,6 +1,11 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRoleAjax('admin');
+
 include_once '../../config/database.php';
 
 try {
@@ -10,7 +15,7 @@ try {
         throw new Exception("Please fill in all required fields.");
     }
 
-    $stmt = $conn->prepare("INSERT INTO tblinstructor 
+    $stmt = $conn->prepare("INSERT INTO tblinstructor
             (last_name, first_name, email, dept_id, is_deleted)
             VALUES (?, ?, ?, ?, 0)");
 
@@ -18,7 +23,7 @@ try {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    $stmt->bind_param("sssi", 
+    $stmt->bind_param("sssi",
         $_POST['last_name'],
         $_POST['first_name'],
         $_POST['email'],
@@ -48,7 +53,7 @@ try {
 
     $stmt->close();
 } catch (Exception $e) {
-    error_log("Error in add_ajax.php: " . $e->getMessage());
+    error_log("Error in add.php: " . $e->getMessage());
     echo json_encode([
         "success" => false,
         "error" => $e->getMessage()

@@ -1,4 +1,9 @@
 <?php
+session_start();
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRole('admin');
+
 // modules/instructor/export_pdf.php (FPDF)
 require_once __DIR__ . '/../../libraries/fpdf/fpdf.php';
 require_once __DIR__ . '/../../config/database.php';
