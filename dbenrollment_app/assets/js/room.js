@@ -63,7 +63,7 @@ $(document).ready(function () {
   window.deleteRoom = function (roomId) {
     if (confirm('Are you sure you want to delete this room?')) {
       $.ajax({
-        url: 'delete_ajax.php',
+        url: 'delete.php',
         type: 'POST',
         data: { room_id: roomId },
         dataType: 'json',

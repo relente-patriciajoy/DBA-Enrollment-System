@@ -1,52 +1,45 @@
 <?php
-include_once '../../config/database.php';
-
+ob_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 header('Content-Type: application/json');
 
-if($_SERVER['REQUEST_METHOD'] == 'POST') {
+include_once('../includes/auth_check.php');
+include_once('../includes/role_check.php');
+requireRoleAjax('admin'); // Ensure this doesn't redirect to a login page
+
+include_once '../../config/database.php';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $room_code = trim($_POST['room_code']);
     $building = trim($_POST['building']);
     $capacity = intval($_POST['capacity']);
     
-    // Validation
-    if(empty($room_code) || empty($building) || empty($capacity)) {
-        echo json_encode(['success' => false, 'message' => 'All fields are required']);
-        exit;
-    }
-    
-    if($capacity < 1) {
-        echo json_encode(['success' => false, 'message' => 'Capacity must be at least 1']);
+    // Check for empty fields
+    if (empty($room_code) || empty($building) || $capacity < 1) {
+        ob_clean();
+        echo json_encode(['success' => false, 'message' => 'All fields are required.']);
         exit;
     }
     
     // Check for duplicate room code
-    $checkStmt = $conn->prepare("SELECT room_id FROM tblroom WHERE room_code = ? AND is_deleted = 0");
-    $checkStmt->bind_param("s", $room_code);
-    $checkStmt->execute();
-    $checkResult = $checkStmt->get_result();
-    
-    if($checkResult->num_rows > 0) {
-        echo json_encode(['success' => false, 'message' => 'Room code already exists']);
-        $checkStmt->close();
+    $check = $conn->prepare("SELECT room_id FROM tblroom WHERE room_code = ? AND is_deleted = 0");
+    $check->bind_param("s", $room_code);
+    $check->execute();
+    if ($check->get_result()->num_rows > 0) {
+        ob_clean();
+        echo json_encode(['success' => false, 'message' => 'Room code already exists.']);
         exit;
     }
-    $checkStmt->close();
-    
-    // Insert new room
+
     $stmt = $conn->prepare("INSERT INTO tblroom (room_code, building, capacity, is_deleted) VALUES (?, ?, ?, 0)");
     $stmt->bind_param("ssi", $room_code, $building, $capacity);
     
-    if($stmt->execute()) {
-        $new_room_id = $conn->insert_id;
-        echo json_encode(['success' => true, 'message' => 'Room added successfully', 'room_id' => $new_room_id]);
+    if ($stmt->execute()) {
+        ob_clean();
+        echo json_encode(['success' => true, 'message' => 'Room added successfully!', 'room_id' => $conn->insert_id]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to add room: ' . $conn->error]);
+        ob_clean();
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
     }
-    
-    $stmt->close();
-} else {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
 }
-
 $conn->close();
-?>
