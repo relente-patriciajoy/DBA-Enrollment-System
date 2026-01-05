@@ -171,6 +171,11 @@ $logs_query = $conn->query("
     <link rel="stylesheet" href="../../assets/css/content.css">
     <link rel="stylesheet" href="../../assets/css/backup.css">
 </head>
+    <style>
+        .topbar {
+            left: 249px;
+        }
+    </style>
 <body>
     <?php include('../../templates/sidebar.php'); ?>
     <?php include('../../templates/header.php'); ?>
