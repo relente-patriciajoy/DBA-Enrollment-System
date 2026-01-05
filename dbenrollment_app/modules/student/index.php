@@ -1,4 +1,11 @@
-<?php include_once '../../config/database.php'; ?>
+<?php
+session_start();
+include('../../modules/includes/auth_check.php');
+include('../../modules/includes/role_check.php');
+requireRole('admin');
+
+include_once '../../config/database.php';
+?>
 <!DOCTYPE html>
 <html>
 <head>

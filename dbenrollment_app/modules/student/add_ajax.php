@@ -1,6 +1,15 @@
 <?php
 session_start();
+
+// Set header
 header('Content-Type: application/json');
+
+// Then do auth checks
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRole('admin');
+
+// Then database connection
 include_once '../../config/database.php';
 
 // Enable error reporting for debugging
@@ -9,7 +18,7 @@ ini_set('display_errors', 1);
 
 try {
     // Validate required fields
-    if (empty($_POST['student_no']) || empty($_POST['last_name']) || 
+    if (empty($_POST['student_no']) || empty($_POST['last_name']) ||
         empty($_POST['first_name']) || empty($_POST['email'])) {
         throw new Exception("Please fill in all required fields.");
     }
@@ -24,7 +33,7 @@ try {
     $year_level = isset($_POST['year_level']) ? trim($_POST['year_level']) : '';
     $program_id = isset($_POST['program_id']) ? intval($_POST['program_id']) : 0;
 
-    $sql = "INSERT INTO tblstudent 
+    $sql = "INSERT INTO tblstudent
             (student_no, last_name, first_name, email, gender, birthdate, year_level, program_id, is_deleted)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)";
 
@@ -33,7 +42,7 @@ try {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    $stmt->bind_param("sssssssi", 
+    $stmt->bind_param("sssssssi",
         $student_no,
         $last_name,
         $first_name,
@@ -59,7 +68,7 @@ try {
 
     $stmt->close();
 } catch (Exception $e) {
-    error_log("Error in add_ajax.php: " . $e->getMessage());
+    error_log("Error in add.php: " . $e->getMessage());
     $response = [
         "success" => false,
         "error" => $e->getMessage()

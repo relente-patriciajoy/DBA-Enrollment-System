@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+// Then do auth checks
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRole('admin');
+
 require_once __DIR__ . '/../../config/database.php';
 
 // File name with real-time date (Format A: October-11-Y)

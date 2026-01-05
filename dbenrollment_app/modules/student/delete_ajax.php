@@ -1,5 +1,15 @@
 <?php
+session_start();
+
+// Set header
 header('Content-Type: application/json');
+
+// Then do auth checks
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRole('admin');
+
+// Then database connection
 include_once '../../config/database.php';
 
 try {

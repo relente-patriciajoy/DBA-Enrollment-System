@@ -5,7 +5,7 @@ $(document).ready(function () {
     e.preventDefault();
 
     $.ajax({
-      url: 'add_ajax.php',
+      url: 'add.php',
       type: 'POST',
       data: $(this).serialize(),
       dataType: 'json',
@@ -92,7 +92,7 @@ $(document).ready(function () {
     e.preventDefault();
 
     $.ajax({
-      url: 'update_ajax.php',
+      url: 'update.php',
       type: 'POST',
       data: $(this).serialize(),
       dataType: 'json',
@@ -144,7 +144,7 @@ $(document).ready(function () {
 
     if (confirm("🗑️ Are you sure you want to delete this student? This will mark them as inactive.")) {
       $.ajax({
-        url: 'delete_ajax.php',
+        url: 'delete.php',
         type: 'POST',
         data: { id: id },
         dataType: 'json',
@@ -166,7 +166,7 @@ $(document).ready(function () {
   $('#studentAddForm').on('submit', function (e) {
     e.preventDefault();
     $.ajax({
-      url: 'add_ajax.php',
+      url: 'add.php',
       type: 'POST',
       data: $(this).serialize(),
       dataType: 'json',
@@ -191,7 +191,7 @@ $(document).ready(function () {
   $('#studentEditForm').on('submit', function (e) {
     e.preventDefault();
     $.ajax({
-      url: 'update_ajax.php',
+      url: 'update.php',
       type: 'POST',
       data: $(this).serialize(),
       dataType: 'json',
@@ -245,7 +245,7 @@ function editStudent(id) {
 function deleteStudent(id) {
   if (confirm('Are you sure you want to delete this student?')) {
     $.ajax({
-      url: 'delete_ajax.php',
+      url: 'delete.php',
       type: 'POST',
       data: { id: id },
       success: function (response) {

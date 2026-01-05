@@ -1,5 +1,14 @@
 <?php
-// session_start(); // Add session start
+// Check if session is already started to prevent Notice
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Also changed to include_once to prevent Fatal Errors
+include_once('../includes/auth_check.php');
+include_once('../includes/role_check.php');
+requireRole('admin');
+
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 
 $where = "is_deleted = 0";

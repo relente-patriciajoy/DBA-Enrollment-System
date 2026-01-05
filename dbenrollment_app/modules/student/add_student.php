@@ -1,6 +1,13 @@
 <!-- Not functional -->
 <?php
 session_start();
+
+// Then do auth checks
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRole('admin');
+
+// Then database connection
 include_once '../../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
