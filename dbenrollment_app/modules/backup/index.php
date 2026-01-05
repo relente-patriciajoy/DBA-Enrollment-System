@@ -5,6 +5,10 @@
  */
 session_start();
 
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRole('admin'); // Only admins can access
+
 // Set Philippines timezone
 date_default_timezone_set('Asia/Manila');
 
