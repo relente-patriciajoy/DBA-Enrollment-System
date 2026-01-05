@@ -1,7 +1,16 @@
 <?php
-include_once '../../config/database.php';
+session_start();
 
+// Set header
 header('Content-Type: application/json');
+
+// Then do auth checks
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRole('admin');
+
+// Then database connection
+include_once '../../config/database.php';
 
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $term_id = intval($_POST['term_id']);
