@@ -20,7 +20,7 @@ include_once '../../config/database.php';
 
   <link rel="stylesheet" href="../../../dbenrollment_app/assets/css/sidebar.css">
   <link rel="stylesheet" href="../../../dbenrollment_app/assets/css/content.css">
-  
+
   <style>
     .new-enrollment-highlight {
     background-color: #d4edda !important;
@@ -498,7 +498,7 @@ include_once '../../config/database.php';
             }
 
             $.ajax({
-                url: 'delete_ajax.php',
+                url: 'delete.php',
                 type: 'POST',
                 data: { enrollment_id: enrollmentId },
                 dataType: 'json',

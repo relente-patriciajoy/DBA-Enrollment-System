@@ -28,50 +28,42 @@ $('#student_select').on('change', function () {
         // Check if student completed all terms
         if (response.message) {
           $('#available_courses_list').html(`
-            ${progressHtml}
-            <div class="alert alert-success mt-3">
-              <h5>✓ All Terms Completed</h5>
-              <p>${response.message}</p>
-            </div>
-          `);
+                        ${progressHtml}
+                        <div class="alert alert-success mt-3">
+                            <h5>✓ All Terms Completed</h5>
+                            <p>${response.message}</p>
+                        </div>
+                    `);
           return;
         }
 
         // Check for term mismatch
         if (response.term_mismatch) {
           $('#available_courses_list').html(`
-            ${progressHtml}
-            <div class="alert alert-warning mt-3">
-              <h5><i class="bi bi-exclamation-triangle"></i> Term Sequence Required</h5>
-              <p><strong>${response.term_mismatch_message}</strong></p>
-              <hr>
-              <p class="mb-0">
-                <strong>Your Next Required Term:</strong> ${response.allowed_term.term_code}<br>
-                <strong>Currently Active Term:</strong> ${response.current_term.term_code}
-              </p>
-            </div>
-            <div class="alert alert-info">
-              <strong>Note:</strong> You must enroll in and complete terms sequentially.
-              Please wait for ${response.allowed_term.term_code} to become active.
-            </div>
-          `);
+                        ${progressHtml}
+                        <div class="alert alert-warning mt-3">
+                            <h5><i class="bi bi-exclamation-triangle"></i> Term Sequence Required</h5>
+                            <p><strong>${response.term_mismatch_message}</strong></p>
+                            <hr>
+                            <p class="mb-0">
+                                <strong>Your Next Required Term:</strong> ${response.allowed_term.term_code}<br>
+                                <strong>Currently Active Term:</strong> ${response.current_term.term_code}
+                            </p>
+                        </div>
+                    `);
           return;
         }
 
         if (response.courses.length === 0) {
           $('#available_courses_list').html(`
-            ${progressHtml}
-            <div class="alert alert-info mt-3">
-              <strong>No available courses found.</strong><br>
-              Current Enrollment Term: ${response.allowed_term.term_code}<br>
-              Student Year Level: ${response.student.year_level}<br><br>
-              This student has either:<br>
-              - Already enrolled in all courses for ${response.allowed_term.term_code}<br>
-              - No courses available for their year level in this term
-            </div>
-          `);
+                        ${progressHtml}
+                        <div class="alert alert-info mt-3">
+                            <strong>No available courses found.</strong><br>
+                            Current Enrollment Term: ${response.allowed_term.term_code}<br>
+                            Student Year Level: ${response.student.year_level}
+                        </div>
+                    `);
         } else {
-          // Display courses with progression
           displayCoursesWithProgress(response, progressHtml, studentId);
         }
       } else {
@@ -80,201 +72,98 @@ $('#student_select').on('change', function () {
     },
     error: function (xhr, status, error) {
       console.error('Error loading courses:', error);
-      console.error('Response:', xhr.responseText);
-      $('#available_courses_list').html('<div class="alert alert-danger">Error loading courses.</div>');
+      $('#available_courses_list').html('<div class="alert alert-danger">Error loading courses. Check console for details.</div>');
     }
   });
 });
 
 // Function to display term progression
 function displayTermProgress(termProgress, allowedTerm, studentInfo) {
-  if (!termProgress || termProgress.length === 0) {
-    return '';
-  }
+  if (!termProgress || termProgress.length === 0) return '';
 
   let html = `
-    <div class="card mb-3">
-      <div class="card-header ${studentInfo.is_irregular ? 'bg-warning' : 'bg-primary'} text-white">
-        <h6 class="mb-0">
-          <i class="bi bi-list-check"></i> Term Enrollment Progress
-          ${studentInfo.is_irregular ? '<span class="badge bg-danger ms-2">IRREGULAR</span>' : '<span class="badge bg-success ms-2">REGULAR</span>'}
-        </h6>
-      </div>
-      <div class="card-body">
-  `;
-
-  if (studentInfo.is_irregular && studentInfo.irregular_reason) {
-    html += `
-      <div class="alert alert-warning mb-3">
-        <strong>Irregular Status:</strong> ${studentInfo.irregular_reason}
-      </div>
-    `;
-  }
-
-  html += '<div class="row">';
+        <div class="card mb-3">
+            <div class="card-header ${studentInfo.is_irregular ? 'bg-warning' : 'bg-primary'} text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-list-check"></i> Term Enrollment Progress
+                    ${studentInfo.is_irregular ? '<span class="badge bg-danger ms-2">IRREGULAR</span>' : '<span class="badge bg-success ms-2">REGULAR</span>'}
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">`;
 
   termProgress.forEach(function (term) {
-    let statusIcon = '';
-    let statusClass = '';
-    let statusText = '';
-    let badgeClass = '';
-    let details = '';
+    let statusIcon = term.is_enrolled ? (term.is_fully_graded ? '✓' : '⏳') : '○';
+    let statusClass = term.is_enrolled ? (term.is_fully_graded ? 'border-success' : 'border-warning') : 'border-secondary';
+    let badgeClass = term.is_enrolled ? (term.is_fully_graded ? 'bg-success' : 'bg-warning') : 'bg-secondary';
+    let statusText = term.is_enrolled ? (term.is_fully_graded ? 'Completed' : 'Pending Grades') : 'Not Yet Enrolled';
 
-    if (term.is_enrolled) {
-      if (term.is_fully_graded) {
-        statusIcon = '✓';
-        statusClass = 'border-success';
-        badgeClass = 'bg-success';
-        statusText = `Completed`;
-        details = `
-          <small class="d-block mt-1">
-            Passed: ${term.passed_courses}
-            ${term.failed_courses > 0 ? ` | Failed: ${term.failed_courses}` : ''}
-          </small>
-        `;
-      } else {
-        statusIcon = '⏳';
-        statusClass = 'border-warning';
-        badgeClass = 'bg-warning';
-        statusText = `Pending Grades`;
-        details = `
-          <small class="d-block mt-1 text-danger">
-            ${term.pending_grades} course(s) awaiting grades
-          </small>
-        `;
-      }
-    } else if (allowedTerm && term.term_id == allowedTerm.term_id) {
-      statusIcon = '→';
-      statusClass = 'border-primary';
-      badgeClass = 'bg-primary';
-      statusText = 'Ready to Enroll';
-    } else {
-      statusIcon = '○';
-      statusClass = 'border-secondary';
-      badgeClass = 'bg-secondary';
-      statusText = 'Not Yet Enrolled';
+    if (!term.is_enrolled && allowedTerm && term.term_id == allowedTerm.term_id) {
+      statusIcon = '→'; statusClass = 'border-primary'; badgeClass = 'bg-primary'; statusText = 'Ready to Enroll';
     }
 
     html += `
-      <div class="col-md-4 mb-3">
-        <div class="border ${statusClass} rounded p-3">
-          <div class="d-flex justify-content-between align-items-start">
-            <strong>${statusIcon} ${term.term_code}</strong>
-            <span class="badge ${badgeClass}">${statusText}</span>
-          </div>
-          ${details}
-        </div>
-      </div>
-    `;
+            <div class="col-md-4 mb-3">
+                <div class="border ${statusClass} rounded p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong>${statusIcon} ${term.term_code}</strong>
+                        <span class="badge ${badgeClass}">${statusText}</span>
+                    </div>
+                </div>
+            </div>`;
   });
 
-  html += `
-        </div>
-      </div>
-    </div>
-  `;
-
+  html += `</div></div></div>`;
   return html;
 }
 
 // Function to display courses with progress
 function displayCoursesWithProgress(response, progressHtml, studentId) {
   let infoHtml = `<div class="alert alert-success mb-3">
-    <h6 class="mb-2"><strong>Sequential Enrollment - One Term at a Time</strong></h6>
-    <div class="row">
-      <div class="col-md-6">
-        <strong>Student Year Level:</strong> ${response.student.year_level}<br>
-        <strong>Enrolling in Term:</strong> ${response.allowed_term.term_code}
-      </div>
-      <div class="col-md-6">
-        <strong>Active System Term:</strong> ${response.current_term.term_code}<br>
-        <strong>Status:</strong> <span class="badge bg-success">Ready to Enroll</span>
-      </div>
-    </div>
-  </div>`;
+        <h6><strong>Sequential Enrollment - Term: ${response.allowed_term.term_code}</strong></h6>
+    </div>`;
 
   let coursesHtml = `
-    <div class="table-responsive">
-      <table class="table table-sm table-bordered table-hover">
-        <thead class="table-dark">
-          <tr>
-            <th>SELECT</th>
-            <th>COURSE CODE</th>
-            <th>COURSE TITLE</th>
-            <th>UNITS</th>
-            <th>SECTION</th>
-            <th>SCHEDULE</th>
-            <th>TERM</th>
-            <th>PREREQUISITES</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-  let hasEnrollableCourses = false;
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>SELECT</th>
+                        <th>COURSE CODE</th>
+                        <th>COURSE TITLE</th>
+                        <th>UNITS</th>
+                        <th>SECTION</th>
+                        <th>SCHEDULE</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
   response.courses.forEach(function (course) {
-    const schedule = `${course.day_pattern} ${course.start_time}-${course.end_time}`;
-    const prereqInfo = course.prerequisites
-      ? `<small class="text-muted">${course.prerequisites}</small>`
-      : '<small class="text-success">None</small>';
-
-    let rowClass = '';
-    let selectCheckbox = '';
-
-    if (course.can_enroll) {
-      hasEnrollableCourses = true;
-      selectCheckbox = `<input type="checkbox" class="form-check-input course-checkbox"
-                             value="${course.section_id}"
-                             data-units="${course.units}"
-                             data-course-code="${course.course_code}"
-                             data-section-code="${course.section_code}">`;
-    } else {
-      rowClass = 'table-secondary';
-      selectCheckbox = `<span class="text-danger" title="${course.prereq_message}">✗</span>`;
-    }
+    let selectCheckbox = course.can_enroll ?
+      `<input type="checkbox" class="form-check-input course-checkbox" value="${course.section_id}" data-units="${course.units}" data-course-code="${course.course_code}">` :
+      `<span class="text-danger">✗</span>`;
 
     coursesHtml += `
-      <tr class="${rowClass}">
-        <td class="text-center">${selectCheckbox}</td>
-        <td><strong>${course.course_code}</strong></td>
-        <td>${course.course_title}</td>
-        <td class="text-center">${course.units}</td>
-        <td>${course.section_code}</td>
-        <td><small>${schedule}</small></td>
-        <td><span class="badge bg-primary">${course.term_code}</span></td>
-        <td>${prereqInfo}${!course.can_enroll ? '<br><span class="badge bg-danger">Prerequisites not met</span>' : ''}</td>
-      </tr>
-    `;
+            <tr class="${course.can_enroll ? '' : 'table-secondary'}">
+                <td class="text-center">${selectCheckbox}</td>
+                <td><strong>${course.course_code}</strong></td>
+                <td>${course.course_title}</td>
+                <td class="text-center">${course.units}</td>
+                <td>${course.section_code}</td>
+                <td><small>${course.day_pattern} ${course.start_time}-${course.end_time}</small></td>
+            </tr>`;
   });
 
-  coursesHtml += `
-        </tbody>
-      </table>
-    </div>
-    <div class="row mt-3 mb-3">
-      <div class="col-md-6">
-        <div class="alert alert-info mb-0">
-          <strong>Selected Units:</strong> <span id="total_units">0</span>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <button type="button" id="enroll_selected_btn" class="btn btn-success btn-lg w-100" disabled>
-          <i class="bi bi-check-circle"></i> Enroll in Selected Courses
-        </button>
-      </div>
-    </div>
-  `;
-
-  if (!hasEnrollableCourses) {
-    coursesHtml += '<div class="alert alert-warning">All courses have unmet prerequisites.</div>';
-  }
+  coursesHtml += `</tbody></table></div>
+        <div class="row mt-3 mb-3">
+            <div class="col-md-6"><div class="alert alert-info">Selected Units: <span id="total_units">0</span></div></div>
+            <div class="col-md-6"><button type="button" id="enroll_selected_btn" class="btn btn-success btn-lg w-100" disabled>Enroll Selected</button></div>
+        </div>`;
 
   $('#available_courses_list').html(progressHtml + infoHtml + coursesHtml);
 
-  // Handle checkbox changes - calculate total units
   $('.course-checkbox').on('change', function () {
-    let total = 0;
-    let count = 0;
+    let total = 0, count = 0;
     $('.course-checkbox:checked').each(function () {
       total += parseFloat($(this).data('units'));
       count++;
@@ -283,47 +172,31 @@ function displayCoursesWithProgress(response, progressHtml, studentId) {
     $('#enroll_selected_btn').prop('disabled', count === 0);
   });
 
-  // Handle enroll button click - IMPORTANT: Pass studentId here
-  $('#enroll_selected_btn').off('click').on('click', function () {
-    console.log('Enroll button clicked for student:', studentId);
-    enrollSelectedCourses(studentId, response.allowed_term.term_id);
+  $('#enroll_selected_btn').on('click', function () {
+    enrollSelectedCourses(studentId);
   });
 }
 
-// Function to enroll in multiple selected courses
-function enrollSelectedCourses(studentId, termId) {
-  console.log('enrollSelectedCourses called with:', studentId, termId);
-
+// CONSOLIDATED ENROLLMENT FUNCTION (Fixes multiple alerts)
+function enrollSelectedCourses(studentId) {
   const selectedSections = [];
   $('.course-checkbox:checked').each(function () {
     selectedSections.push({
       section_id: $(this).val(),
-      course_code: $(this).data('course-code'),
-      section_code: $(this).data('section-code')
+      course_code: $(this).data('course-code')
     });
   });
 
-  console.log('Selected sections:', selectedSections);
+  if (!confirm(`Enroll in ${selectedSections.length} course(s)?`)) return;
 
-  if (selectedSections.length === 0) {
-    alert('Please select at least one course to enroll');
-    return;
-  }
-
-  if (!confirm(`Are you sure you want to enroll in ${selectedSections.length} course(s)?`)) {
-    return;
-  }
-
-  const dateEnrolled = new Date().toISOString().split('T')[0];
-
-  // Disable button during enrollment
   $('#enroll_selected_btn').prop('disabled', true).html('<i class="spinner-border spinner-border-sm"></i> Enrolling...');
 
   let enrolledCount = 0;
   let failedCourses = [];
-  let completed = 0;
+  let processed = 0;
+  const dateEnrolled = new Date().toISOString().split('T')[0];
 
-  selectedSections.forEach(function (section, index) {
+  selectedSections.forEach(function (section) {
     $.ajax({
       url: 'add_enrollment.php',
       method: 'POST',
@@ -331,32 +204,20 @@ function enrollSelectedCourses(studentId, termId) {
         student_id: studentId,
         section_id: section.section_id,
         date_enrolled: dateEnrolled,
-        status: 'Regular',
-        letter_grade: ''
+        status: 'Regular'
       },
       dataType: 'json',
       success: function (response) {
-        completed++;
-        console.log('Enrollment response for', section.course_code, ':', response);
-
-        if (response.success) {
-          enrolledCount++;
-        } else {
-          failedCourses.push(`${section.course_code} - ${section.section_code}: ${response.error || 'Unknown error'}`);
-        }
-
-        // Check if all requests are complete
-        if (completed === selectedSections.length) {
-          finishEnrollment(enrolledCount, failedCourses, selectedSections.length);
-        }
+        if (response.success) enrolledCount++;
+        else failedCourses.push(`${section.course_code}: ${response.error}`);
       },
-      error: function (xhr, status, error) {
-        completed++;
-        console.error('Enrollment error for', section.course_code, ':', error);
-        console.error('Response:', xhr.responseText);
-        failedCourses.push(`${section.course_code} - ${section.section_code}: ${error}`);
-
-        if (completed === selectedSections.length) {
+      error: function () {
+        failedCourses.push(`${section.course_code}: Server Error`);
+      },
+      complete: function () {
+        processed++;
+        // TRIGGER ONLY ON THE LAST REQUEST
+        if (processed === selectedSections.length) {
           finishEnrollment(enrolledCount, failedCourses, selectedSections.length);
         }
       }
@@ -364,26 +225,44 @@ function enrollSelectedCourses(studentId, termId) {
   });
 }
 
-function finishEnrollment(enrolledCount, failedCourses, totalCourses) {
-  let message = `Successfully enrolled in ${enrolledCount} out of ${totalCourses} course(s)`;
-
+function finishEnrollment(enrolledCount, failedCourses, total) {
+  let message = `Successfully enrolled in ${enrolledCount} out of ${total} courses.`;
   if (failedCourses.length > 0) {
-    message += `\n\nFailed enrollments:\n${failedCourses.join('\n')}`;
-    alert(message);
-  } else {
-    alert(message + '\n\nEnrollment completed successfully!');
+    message += `\n\nFailed Courses:\n${failedCourses.join('\n')}`;
   }
-
-  // Close modal and reload page
-  const addModal = bootstrap.Modal.getInstance(document.getElementById('enrollmentAddModal'));
-  if (addModal) {
-    addModal.hide();
-  }
-
-  setTimeout(function () {
-    location.reload();
-  }, 500);
+  alert(message);
+  location.reload();
 }
+
+// DELETE LISTENER
+$(document).on('click', '.btn-delete-enrollment', function (e) {
+  e.preventDefault();
+  const id = $(this).data('enrollment-id');
+
+  // ONLY ONE confirmation modal before sending the request
+  if (!confirm('Are you sure you want to delete this enrollment record?')) return;
+
+  $.ajax({
+    url: 'delete_ajax.php',
+    method: 'POST',
+    data: { enrollment_id: id },
+    dataType: 'json',
+    success: function (response) {
+      // If the server returns success: true, show ONE alert and reload
+      if (response.success) {
+        alert(response.message);
+        location.reload();
+      } else {
+        alert('Error: ' + (response.error || 'Could not delete record.'));
+      }
+    },
+    error: function (xhr, status, error) {
+      // This only triggers if the PHP crashes or sends invalid JSON
+      console.error('Delete Error:', xhr.responseText);
+      alert('A server error occurred. Please check the console.');
+    }
+  });
+});
 
 // Clear form when modal is closed
 $('#enrollmentAddModal').on('hidden.bs.modal', function () {

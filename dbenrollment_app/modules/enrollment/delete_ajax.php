@@ -1,28 +1,32 @@
 <?php
-session_start();
+ob_start(); // Buffer all output
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 header('Content-Type: application/json');
 
-include('../includes/auth_check_ajax.php');
-include('../includes/role_check_ajax.php');
+include_once('../includes/auth_check.php');
+include_once('../includes/role_check.php');
 requireRoleAjax('admin');
-
 include_once '../../config/database.php';
 
-if (!isset($_POST['enrollment_id'])) {
-    echo json_encode(['success'=>false,'error'=>'Missing enrollment_id']);
-    exit;
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id = isset($_POST['enrollment_id']) ? intval($_POST['enrollment_id']) : 0;
+
+    if ($id > 0) {
+        // Perform the deletion
+        $stmt = $conn->prepare("DELETE FROM tblenrollment WHERE enrollment_id = ?");
+        $stmt->bind_param("i", $id);
+
+        if ($stmt->execute()) {
+            ob_clean(); // Remove any warnings or extra spaces
+            echo json_encode(['success' => true, 'message' => 'Enrollment deleted successfully']);
+        } else {
+            ob_clean();
+            echo json_encode(['success' => false, 'error' => $conn->error]);
+        }
+        $stmt->close();
+    } else {
+        ob_clean();
+        echo json_encode(['success' => false, 'error' => 'Invalid ID']);
+    }
 }
-
-$id = intval($_POST['enrollment_id']);
-$stmt = $conn->prepare("UPDATE tblenrollment SET is_deleted = 1 WHERE enrollment_id = ?");
-$stmt->bind_param("i", $id);
-
-if ($stmt->execute()) {
-    echo json_encode(['success'=>true]);
-} else {
-    echo json_encode(['success'=>false,'error'=>$stmt->error]);
-}
-
-$stmt->close();
 $conn->close();
-?>
