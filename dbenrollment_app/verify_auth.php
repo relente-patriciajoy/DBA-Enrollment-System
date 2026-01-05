@@ -5,8 +5,8 @@
  */
 
 $modules = [
-    'backup', 'course', 'course_prerequisite', 'department', 
-    'enrollment', 'instructor', 'program', 'room', 
+    'backup', 'course', 'course_prerequisite', 'department',
+    'enrollment', 'instructor', 'program', 'room',
     'section', 'student', 'term'
 ];
 
@@ -32,26 +32,26 @@ foreach ($modules as $module) {
     foreach ($files as $file) {
         $basename = basename($file);
         $content = file_get_contents($file);
-        
+
         // Check if it has auth_check
         $hasAuthCheck = strpos($content, 'auth_check') !== false;
         $hasSessionStart = strpos($content, 'session_start()') !== false;
         $hasRoleCheck = strpos($content, 'role_check') !== false;
         $hasRequireRole = strpos($content, 'requireRole') !== false;
-        
+
         // Determine file type
         $isAjax = (
-            strpos($basename, '_ajax.php') !== false ||
+            strpos($basename, '.php') !== false ||
             strpos($basename, 'add_') === 0 ||
             strpos($basename, 'delete_') === 0 ||
             strpos($basename, 'update_') === 0 ||
             strpos($basename, 'get_') === 0
         ) && $basename !== 'index.php';
-        
+
         if ($hasAuthCheck && $hasSessionStart && $hasRoleCheck && $hasRequireRole) {
             echo "   ✅ PROTECTED: $basename\n";
             $results['protected'][] = "$module/$basename";
-            
+
             if ($isAjax) {
                 $results['ajax_files'][] = "$module/$basename";
             } else {

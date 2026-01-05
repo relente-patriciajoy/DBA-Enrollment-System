@@ -16,8 +16,8 @@ $patterns = [
     // AJAX files
     'ajax' => [
         'search' => '/^<\?php\s*\n(session_start\(\);\s*\n)?/',
-        'replace' => "<?php\nsession_start();\nheader('Content-Type: application/json');\n\ninclude('../includes/auth_check_ajax.php');\ninclude('../includes/role_check_ajax.php');\nrequireRoleAjax('admin');\n\n",
-        'files' => ['*_ajax.php', 'add_*.php', 'delete_*.php', 'update_*.php', 'get_*.php']
+        'replace' => "<?php\nsession_start();\nheader('Content-Type: application/json');\n\ninclude('../includes/auth_check.php');\ninclude('../includes/role_check.php');\nrequireRoleAjax('admin');\n\n",
+        'files' => ['*.php', 'add_*.php', 'delete_*.php', 'update_*.php', 'get_*.php']
     ],
     
     // Export files
@@ -29,8 +29,8 @@ $patterns = [
 ];
 
 $modules = [
-    'backup', 'course', 'course_prerequisite', 'department', 
-    'enrollment', 'instructor', 'program', 'room', 
+    'backup', 'course', 'course_prerequisite', 'department',
+    'enrollment', 'instructor', 'program', 'room',
     'section', 'student', 'term'
 ];
 
@@ -43,7 +43,7 @@ echo "🚀 Starting bulk auth header update and path correction...\n\n";
 
 foreach ($modules as $module) {
     $dir = "modules/$module/";
-    
+
     if (!is_dir($dir)) {
         echo "⚠️  Directory not found: $dir\n";
         continue;
@@ -68,7 +68,7 @@ foreach ($modules as $module) {
         if (strpos($content, 'auth_check') === false) {
             // Determine file type
             $isAjax = (
-                strpos($basename, '_ajax.php') !== false ||
+                strpos($basename, '.php') !== false ||
                 strpos($basename, 'add_') === 0 ||
                 strpos($basename, 'delete_') === 0 ||
                 strpos($basename, 'update_') === 0 ||
