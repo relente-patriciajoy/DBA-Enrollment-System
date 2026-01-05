@@ -41,7 +41,7 @@ $(document).ready(function () {
               <td>${roomId}</td>
               <td>${maxCapacity}</td>
               <td class='text-center'>
-                <button class='btn btn-warning btn-sm edit-section' data-id='${newSectionId}'>Edit</button> 
+                <button class='btn btn-warning btn-sm edit-section' data-id='${newSectionId}'>Edit</button>
                 <button class='btn btn-danger btn-sm delete-section' data-id='${newSectionId}'>Delete</button>
               </td>
             </tr>
@@ -127,7 +127,7 @@ $(document).ready(function () {
     if (!confirm('Are you sure you want to delete this section?')) return;
 
     $.ajax({
-      url: 'delete_ajax.php',
+      url: 'delete.php',
       method: 'POST',
       data: { section_id: id },
       dataType: 'json'
@@ -138,7 +138,7 @@ $(document).ready(function () {
         $(`.delete-section[data-id='${id}']`).closest('tr').fadeOut();
       } else {
         alert(resp.error || 'Failed to delete section');
-        console.error('delete_ajax.php resp', resp);
+        console.error('delete.php resp', resp);
       }
     }).fail(function (xhr, status, err) {
       alert('Server error deleting section — see console.');
