@@ -10,4 +10,5 @@
     <a href="/DBA-Enrollment-System/dbenrollment_app/modules/term/index.php">Terms</a>
     <a href="/DBA-Enrollment-System/dbenrollment_app/modules/room/index.php">Rooms</a>
     <a href="/DBA-Enrollment-System/dbenrollment_app/modules/enrollment/index.php">Enrollments</a>
+    <a href="/DBA-Enrollment-System/dbenrollment_app/modules/backup/index.php" style="border-top: 2px solid rgba(255, 204, 0, 0.3); margin-top: 10px; padding-top: 16px;">📦 Backup & Restore</a>
 </div>
