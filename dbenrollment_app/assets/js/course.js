@@ -34,7 +34,7 @@ $(document).ready(function () {
               <td>${labHours}</td>
               <td>${deptId}</td>
               <td class='text-center'>
-                <button class='btn btn-warning btn-sm edit-course' data-id='${newCourseId}'>Edit</button> 
+                <button class='btn btn-warning btn-sm edit-course' data-id='${newCourseId}'>Edit</button>
                 <button class='btn btn-danger btn-sm delete-course' data-id='${newCourseId}'>Delete</button>
               </td>
             </tr>
@@ -120,7 +120,7 @@ $(document).ready(function () {
         if (!confirm('Are you sure you want to delete this course?')) return;
 
         $.ajax({
-            url: 'delete_ajax.php',
+            url: 'delete.php',
             method: 'POST',
             data: { course_id: id },
             dataType: 'json'
@@ -131,7 +131,7 @@ $(document).ready(function () {
                 $(`.delete-course[data-id='${id}']`).closest('tr').fadeOut();
             } else {
                 alert(resp.error || 'Failed to delete course');
-                console.error('delete_ajax.php resp', resp);
+                console.error('delete.php resp', resp);
             }
         }).fail(function (xhr, status, err) {
             alert('Server error deleting course — see console.');
