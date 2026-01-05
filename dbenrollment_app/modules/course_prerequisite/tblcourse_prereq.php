@@ -1,4 +1,14 @@
 <?php
+// Prevent "Notice: session_start(): Ignoring session_start()"
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Use include_once to prevent "Fatal error: Cannot redeclare requireRole()"
+include_once('../includes/auth_check.php');
+include_once('../includes/role_check.php');
+requireRole('admin');
+
 // Search functionality
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $new_prereq_id = isset($_GET['new_prereq']) ? intval($_GET['new_prereq']) : 0;

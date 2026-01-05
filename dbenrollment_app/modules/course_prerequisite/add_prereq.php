@@ -1,7 +1,12 @@
 <?php
-include_once '../../config/database.php';
-
+session_start();
 header('Content-Type: application/json');
+
+include('../includes/auth_check.php');
+include('../includes/role_check.php');
+requireRoleAjax('admin');
+
+include_once '../../config/database.php';
 
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $course_id = intval($_POST['course_id']);

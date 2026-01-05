@@ -63,7 +63,7 @@ $(document).ready(function () {
   window.deletePrereq = function (prereqId) {
     if (confirm('Are you sure you want to delete this prerequisite?')) {
       $.ajax({
-        url: 'delete_ajax.php',
+        url: 'delete.php',
         type: 'POST',
         data: { prereq_id: prereqId },
         dataType: 'json',
