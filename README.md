@@ -54,6 +54,17 @@ The system integrates multiple interconnected tables for managing:
 All tables are related through **primary and foreign keys** to maintain **data referential integrity**.
 
 ---
+### 🔑 Demo Credentials
+* **Admin Account**
+  * Username: `test1`
+  * Password: `test123`
+* **Student Account**
+  * Username: `student_patricia`
+  * Password: `password`
+* **Faculty Account**
+  * Username: `faculty1`
+  * Password: `faculty123`
+---
 
 ## ⚙️ Features & Core Functionality
 
