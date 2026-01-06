@@ -213,7 +213,7 @@ thead th {
 
 .user-role {
     font-size: 15px;
-    color: #ffcc00;
+    color: #080705;
 }
 
 .logout-btn {
@@ -238,7 +238,6 @@ thead th {
 
 /* Heading and User Role Colors */
 h1,
-h2,
-.user-role {
+h2 {
     color: #FFCC00;
 }

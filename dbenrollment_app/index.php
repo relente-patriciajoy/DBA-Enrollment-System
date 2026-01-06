@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Please fill in all fields.";
     } else {
         // Check in tbluser table
-        $stmt = $conn->prepare("SELECT user_id, username, password, role, full_name FROM tbluser WHERE username = ? AND is_active = 1");
+        $stmt = $conn->prepare("SELECT user_id, username, password, role, full_name, reference_id FROM tbluser WHERE username = ? AND is_active = 1");
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -55,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['full_name'] = $user['full_name'];
+                $_SESSION['reference_id'] = $user['reference_id'];
                 
                 // Redirect based on role
                 if ($user['role'] === 'student') {
@@ -63,6 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 } elseif ($user['role'] === 'admin') {
                     header("Location: modules/student/index.php");
                 } elseif ($user['role'] === 'faculty') {
+                    $_SESSION['reference_id'] = $user['reference_id'];
                     header("Location: modules/faculty/dashboard.php");
                 }
                 exit();

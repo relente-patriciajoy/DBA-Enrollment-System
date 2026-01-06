@@ -48,6 +48,5 @@ if (session_status() === PHP_SESSION_NONE) {
         echo (strtolower($role) === 'admin') ? 'Administrator' : ucfirst($role);
       ?>
     </span>
-    <a href="../../logout.php" class="logout-btn">Logout</a>
   </div>
 </div>

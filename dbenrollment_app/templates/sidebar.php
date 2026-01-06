@@ -11,6 +11,9 @@
     <a href="/DBA-Enrollment-System/dbenrollment_app/modules/room/index.php">Rooms</a>
     <a href="/DBA-Enrollment-System/dbenrollment_app/modules/enrollment/index.php">Enrollments</a>
     <a href="/DBA-Enrollment-System/dbenrollment_app/modules/backup/index.php">Backup & Restore</a>
+    <div style="margin-top: auto; padding-top: 20px; border-top: 2px solid rgba(255, 255, 255, 0.1);">
+        <a href="../../logout.php" style="color: #FFCC00;">🚪 Logout</a>
+    </div>
     <!--     <a href="/DBA-Enrollment-System/dbenrollment_app/modules/backup/index.php" style="border-top: 2px solid rgba(255, 204, 0, 0.3); margin-top: 10px; padding-top: 16px;">📦 Backup & Restore</a>
  -->
 </div>
